@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day30 Phrasal Verbs Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】基本設定
+       ========================================= */
+    :root { --primary: #4a90e2; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    /* ワードバンク */
+    .word-bank { 
+      font-weight: bold; font-size: 14.5px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; align-self: flex-start; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    .draggable-word {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      user-select: none;
+      background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { background: var(--selected); color: #000; border: 1px solid #cfa000; box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.4); transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+    
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    /* 空欄 */
+    .blank { 
+      display: inline-block; min-width: 60px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 2px; padding: 2px 4px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    /* 上書き可能状態 */
+    body.is-selecting .blank.filled { background: #fff3cd; border-bottom: 1.5px solid #ffcc00; animation: none; opacity: 1; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+    
+    .ans-hint { color: var(--accent); font-size: 0.85em; font-weight: bold; margin-left: 4px; }
+    
+    /* 注釈 */
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+    
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    /* =========================================
+       【PDF印刷用】A4・2枚完結
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      
+      .browser-only { display: none !important; }
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      
+      .word-bank { 
+        background: none !important; border: 1.5px solid #000 !important; 
+        color: #000 !important; font-size: 16px !important; 
+        padding: 2px 8px !important; margin-bottom: 3mm !important; 
+        display: block !important;
+      }
+      .draggable-word {
+        display: inline !important;
+        border: none !important; background: none !important; box-shadow: none !important;
+        padding: 0 !important; color: inherit !important; 
+        cursor: default !important; opacity: 1 !important; text-decoration: none !important;
+        pointer-events: none !important;
+      }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+      
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 85px !important; background: none !important; }
+      .ans-hint { display: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls">
+  <button onclick="generate()">問題をシャッフル</button>
+  <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+  <button onclick="window.print()" style="background: #34c759;">PDF保存 / 印刷</button>
+</div>
+
+<div class="container">
+  <div class="header"><h1>3級 Day30 Phrasal Verbs</h1></div>
+  <div class="instruction">
+    ★ Fill in the blanks with the correct phrasal verbs. (Change the verb form if necessary.)
+    <span class="browser-only"><br>(Tap a filled blank to return the word to the bank.)</span>
+  </div>
+  <div id="exercise-content"></div>
+  <div id="notes-area" class="notes-container"></div>
+</div>
+
+<script>
+const masterData = [
+  { ans: ["give", "back"], raw: "give back", text: "Anne is very forgetful, but she remembered to [B] the 10 dollars she borrowed from Erin." },
+  { ans: ["go", "back"], raw: "go back", text: "Jessie is tired from his busy job. &nbsp;&nbsp;He wants to [B] to Montana. &nbsp;&nbsp;The beautiful nature there helps him relax." },
+  { ans: ["turn", "down"], raw: "turn down", text: "When Sam started his 'ninja dance' with loud music, his neighbor got angry and said, \"[B] the music!\"" },
+  { ans: ["write", "back"], raw: "write back", text: "Mr. Noble hates talking on the phone and will never call back. &nbsp;&nbsp;However, if you send an email, he will [B] to you." },
+  { ans: ["come", "over"], raw: "come over", text: "Matt is planning a birthday party for Erin.&nbsp;&nbsp; He asked all their friends to [B] to his house this Saturday." },
+  { ans: ["look", "in"], raw: "look in", text: "Matt is performing a magic show.&nbsp;&nbsp;He let the audience [B] the box and said, \"There's nothing inside.\"&nbsp;&nbsp;Then, suddenly, he took out a rubber chicken from the box!"},
+  { ans: ["get", "up"], raw: "get up", text: "Sam stayed up late reading 'Demon Slayer' again. &nbsp;&nbsp;It was very difficult for him to [B] early this morning." },
+  { ans: ["go", "away"], raw: "go away", text: "Brian has a bad toothache. &nbsp;&nbsp;He is praying for the pain to [B]." },
+  { ans: ["heard", "of"], raw: "hear of", text: "Have you [B] the Blue Pond in Hokkaido? &nbsp;&nbsp;It's a popular tourist spot." },
+  { ans: ["ran", "away"], raw: "run away", text: "Timothy's puppy [B] because he left the door open. &nbsp;&nbsp;Now George is helping him find the dog." },
+  { ans: ["worries", "about"], raw: "worry about", text: "Bruce doesn't care about his grades, so he never [B] homework or exams." },
+  { ans: ["asked", "for"], raw: "ask for", text: "Timothy wants to be popular with girls. &nbsp;&nbsp;He called Veronica to [B] hairstyle advice." },
+  { ans: ["gave", "up"], raw: "give up", text: "Mr. Sterling tried the pineapple diet to lose weight, but he [B] after a week and went to a steakhouse." },
+  { ans: ["shopping", "for"], raw: "shop for", text: "Masako is interested in fashion lately. &nbsp;&nbsp;Today, she is [B] trendy boots in the city." },
+  { ans: ["turn", "on"], raw: "turn on", text: "Sam just had a cup of coffee, and now he wants to dance! &nbsp;&nbsp;He will [B] the radio and start moving like a ninja." },
+  { ans: ["belongs", "to"], raw: "belong to", text: "Shelly [B] the school's tennis club and practices hard every day." }
+];
+
+const allNotes = [
+  "forgetful = 忘れっぽい", 
+  "hairstyle advice = 髪型のアドバイス", 
+  "audience = 観客",
+  "Rubber chicken = ゴム製のチキン", 
+  "tourist spot = 観光スポット", 
+  "be popular with girls = 女の子にモテる", 
+  "trendy = 流行の", 
+  "pray = 祈る", 
+  "pain = 痛み"
+];
+
+let selectedElement = null; // 選択中の単語要素
+let wordIdCounter = 0;
+
+function generate() {
+  const content = document.getElementById('exercise-content');
+  content.innerHTML = '';
+  wordIdCounter = 0;
+  clearSelection();
+
+  let shuffled = [...masterData].sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < 4; i++) {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    const currentFour = shuffled.slice(i * 4, (i + 1) * 4);
+    const blockWords = currentFour.map(item => item.raw).sort(() => Math.random() - 0.5);
+    
+    // --- ワードバンク ---
+    const wordBank = document.createElement('div');
+    wordBank.className = 'word-bank';
+    const prefix = document.createElement('span');
+    prefix.textContent = `${i + 1}) `;
+    wordBank.appendChild(prefix);
+
+    blockWords.forEach((word) => {
+      const span = document.createElement('span');
+      span.id = 'word-' + (wordIdCounter++); // ユニークID
+      span.className = 'draggable-word';
+      span.textContent = word;
+      span.draggable = true;
+      
+      const correctItem = currentFour.find(item => item.raw === word);
+      if(correctItem) {
+        span.setAttribute('data-answer-pair', JSON.stringify(correctItem.ans));
+      }
+
+      span.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', word);
+        e.dataTransfer.setData('application/json', span.getAttribute('data-answer-pair'));
+        e.dataTransfer.setData('sourceId', span.id);
+        clearSelection();
+      });
+
+      span.addEventListener('click', () => {
+        if (span.classList.contains('used')) return;
+        if (span.classList.contains('selected')) {
+          clearSelection();
+        } else {
+          clearSelection();
+          span.classList.add('selected');
+          selectedElement = span;
+          document.body.classList.add('is-selecting');
+        }
+      });
+
+      wordBank.appendChild(span);
+    });
+    block.appendChild(wordBank);
+
+    // --- 文章リスト ---
+    const sList = document.createElement('div');
+    sList.className = 'sentence-list';
+    currentFour.forEach(item => {
+      const p = document.createElement('div');
+      p.className = 'sentence';
+      
+      let html = item.text;
+      const groupId = Math.random().toString(36).substring(7);
+      
+      // ★[B]が1つしかないのに答えが2語の場合、[B] [B]に増やす
+      const blankCount = (html.match(/\[B\]/g) || []).length;
+      if (blankCount === 1 && item.ans.length === 2) {
+        html = html.replace('[B]', '[B] [B]');
+      }
+
+      // [B]を順番にspanへ置換
+      let blankIndex = 0;
+      while(html.includes('[B]')) {
+         const val = item.ans[blankIndex] || ""; 
+         html = html.replace('[B]', `<span class="blank" data-ans="${val}" data-group="${groupId}" data-index="${blankIndex}"></span>`);
+         blankIndex++;
+      }
+      p.innerHTML = html;
+      
+      // イベント設定
+      p.querySelectorAll('.blank').forEach(blank => {
+        // PC用ドロップ
+        blank.addEventListener('dragover', (e) => e.preventDefault());
+        blank.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const jsonStr = e.dataTransfer.getData('application/json');
+          const sourceId = e.dataTransfer.getData('sourceId');
+          
+          if (jsonStr) {
+            const answerPair = JSON.parse(jsonStr);
+            if (blank.classList.contains('filled')) {
+               returnPhrasalVerbToBank(blank);
+            }
+            fillPhrasalVerb(blank, answerPair, sourceId);
+            
+            const sourceEl = document.getElementById(sourceId);
+            if (sourceEl) sourceEl.classList.add('used');
+          }
+        });
+
+        // ★タップ操作
+        blank.addEventListener('click', () => {
+          if (selectedElement) {
+            const answerPair = JSON.parse(selectedElement.getAttribute('data-answer-pair'));
+            if (blank.classList.contains('filled')) {
+               returnPhrasalVerbToBank(blank);
+            }
+            fillPhrasalVerb(blank, answerPair, selectedElement.id);
+            selectedElement.classList.add('used');
+            clearSelection();
+          } else {
+            // クリア機能
+            if (blank.classList.contains('filled')) {
+               returnPhrasalVerbToBank(blank);
+            }
+          }
+        });
+      });
+
+      sList.appendChild(p);
+    });
+    block.appendChild(sList);
+    content.appendChild(block);
+  }
+
+  // --- 注釈生成 ---
+  const nArea = document.getElementById('notes-area');
+  nArea.innerHTML = '';
+  allNotes.sort().forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'notes-item';
+    const parts = n.split(' = ');
+    if (parts.length === 2) {
+      item.innerHTML = `<b>${parts[0]}</b> = ${parts[1]}`;
+    } else {
+      item.textContent = n;
+    }
+    nArea.appendChild(item);
+  });
+}
+
+function fillPhrasalVerb(targetBlank, answerPair, sourceId) {
+  const groupId = targetBlank.getAttribute('data-group');
+  const siblings = document.querySelectorAll(`.blank[data-group="${groupId}"]`);
+  
+  siblings.forEach((b, i) => {
+    if (answerPair[i]) {
+      b.textContent = answerPair[i];
+      b.style.color = 'var(--accent)';
+      b.classList.add('filled');
+      b.dataset.sourceId = sourceId;
+    }
+  });
+}
+
+function returnPhrasalVerbToBank(targetBlank) {
+  const groupId = targetBlank.getAttribute('data-group');
+  const siblings = document.querySelectorAll(`.blank[data-group="${groupId}"]`);
+  
+  const sourceId = siblings[0].dataset.sourceId;
+  if (sourceId) {
+    const sourceEl = document.getElementById(sourceId);
+    if (sourceEl) sourceEl.classList.remove('used');
+  }
+
+  siblings.forEach(b => {
+    b.textContent = '';
+    b.classList.remove('filled');
+    b.removeAttribute('data-source-id');
+    b.style.color = 'var(--accent)';
+  });
+}
+
+function clearSelection() {
+  document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected'));
+  document.body.classList.remove('is-selecting');
+  selectedElement = null;
+}
+
+function checkAnswers() {
+  clearSelection();
+  document.querySelectorAll('.blank').forEach(b => {
+    const user = b.innerText.trim().toLowerCase();
+    const correct = b.getAttribute('data-ans').toLowerCase();
+    if (!user) return;
+    
+    if (user === correct) {
+      b.style.color = 'var(--success)';
+    } else {
+      b.style.color = 'var(--accent)';
+    }
+  });
+}
+
+window.addEventListener('load', generate);
+</script>
+</body>
+</html>

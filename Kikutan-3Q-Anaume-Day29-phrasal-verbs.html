@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day29 Phrasal Verbs Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】基本設定
+       ========================================= */
+    :root { --primary: #4a90e2; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    /* ワードバンク */
+    .word-bank { 
+      font-weight: bold; font-size: 14.5px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; align-self: flex-start; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    .draggable-word {
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+      user-select: none;
+      background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { background: var(--selected); color: #000; border: 1px solid #cfa000; box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.4); transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+    
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    /* 空欄 */
+    .blank { 
+      display: inline-block; min-width: 60px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 2px; padding: 2px 4px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    body.is-selecting .blank.filled { background: none; border-bottom: 1.5px solid #333; animation: none; opacity: 0.6; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+    
+    .ans-hint { color: var(--accent); font-size: 0.85em; font-weight: bold; margin-left: 4px; }
+    
+    /* 注釈 */
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+    
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    /* =========================================
+       【PDF印刷用】A4・2枚完結
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      .browser-only { display: none !important; }
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      
+      .word-bank { 
+        background: none !important; border: 1.5px solid #000 !important; 
+        color: #000 !important; font-size: 16px !important; 
+        padding: 2px 8px !important; margin-bottom: 3mm !important; 
+        display: block !important;
+      }
+      .draggable-word {
+        display: inline !important;
+        border: none !important; background: none !important; box-shadow: none !important;
+        padding: 0 !important; color: inherit !important; 
+        cursor: default !important; opacity: 1 !important; text-decoration: none !important;
+        pointer-events: none !important;
+      }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+      
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 85px !important; background: none !important; }
+      .ans-hint { display: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls">
+  <button onclick="generate()">問題をシャッフル</button>
+  <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+  <button onclick="window.print()" style="background: #34c759;">PDF保存 / 印刷</button>
+</div>
+
+<div class="container">
+  <div class="header"><h1>3級 Day29 Phrasal Verbs</h1></div>
+  <div class="instruction">
+    ★ Fill in the blanks with the correct words from the bank. (Change the form if necessary.)
+    <span class="browser-only"><br>(Tap a filled blank to return the word to the bank.)</span>
+  </div>
+  <div id="exercise-content"></div>
+  <div id="notes-area" class="notes-container"></div>
+</div>
+
+<script>
+const masterData = [
+  { raw: "stay with", text: "Miki's friend from France is [B] [B] her for a week. She loves the kotatsu, a table with a heater.", ans: ["staying", "with"] },
+  { raw: "throw away", text: "Mr. Sterling decided to eat healthy food. He [B] [B] all the junk food in his house.", ans: ["threw", "away"] },
+  { raw: "listen to", text: "Daniel loves music, but he doesn't [B] [B] it when he is working.", ans: ["listen", "to"] },
+  { raw: "take off", text: "Jessie has 10 tattoos on his legs, so he doesn't want to [B] [B] his pants.", ans: ["take", "off"] },
+  { raw: "turn off", text: "Masako wants to do her homework, so she said to her little sister, \"[B] [B] the TV!\"", ans: ["turn", "off"] },
+  { raw: "graduate from", text: "Keita [B] [B] high school this spring and moved to university.", ans: ["graduated", "from"] },
+  { raw: "look at", text: "Mr. Sterling showed his expensive watch and said, \"[B] [B] my diamond watch!\"", ans: ["look", "at"] },
+  { raw: "turn up", text: "Sam is usually quiet, but when he drinks coffee, he [B] [B] the music and dances like a ninja.", ans: ["turns", "up"] },
+  { raw: "take out", text: "Matt [B] [B] a pen when Erin needed one. She laughed because it was like a magic trick.", ans: ["took", "out"] },
+  { raw: "write to", text: "Daniel's grandmother lives in Florida. He misses her very much, so he [B] [B] her every month.", ans: ["writes", "to"] },
+  { raw: "come back", text: "When Veronica [B] [B] from school, she always washes her hands.", ans: ["comes", "back"] },
+  { raw: "hear from", text: "Mr. Sterling [B] [B] his ex-girlfriend after many years. He was so happy!", ans: ["heard", "from"] },
+  { raw: "laugh at", text: "Bruce is so funny! All the children in class [B] [B] his jokes.", ans: ["laugh", "at"] },
+  { raw: "stay up", text: "Sam loves anime. He [B] [B] late again to read 'Demon Slayer' last night.", ans: ["stayed", "up"] },
+  { raw: "try on", text: "Anne [B] [B] 20 pairs of shoes at the store, but she didn't buy any of them.", ans: ["tried", "on"] },
+  { raw: "call back", text: "When Brian called, Rebecca was training for a marathon, so she [B] him [B] later.", ans: ["called", "back"] }
+];
+
+const allNotes = ["Demon Slayer = 鬼滅の刃", "French = フランスの", "a table with a heater = ヒーター付きのテーブル", "dances like a ninja = 忍者のように踊る", "diamond = ダイアモンド", "ex-girlfriend = 元カノ", "healthy food = 健康的な食べ物", "joke = ジョーク", "junk food = ジャンクフード", "kotatsu = こたつ", "magic trick = 手品", "marathon training = マラソンの練習", "miss = ～に会えなくてさみしい", "quiet = おとなしい", "tattoos on his legs = 脚の刺青"];
+
+let selectedElement = null; // 選択中の単語要素（ワードバンク）
+let wordIdCounter = 0; // ID生成用
+
+function generate() {
+  const content = document.getElementById('exercise-content');
+  content.innerHTML = '';
+  wordIdCounter = 0;
+  clearSelection();
+
+  let shuffled = [...masterData].sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < 4; i++) {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    const currentFour = shuffled.slice(i * 4, (i + 1) * 4);
+    const blockWords = currentFour.map(item => item.raw).sort(() => Math.random() - 0.5);
+    
+    // --- ワードバンク ---
+    const wordBank = document.createElement('div');
+    wordBank.className = 'word-bank';
+    const prefix = document.createElement('span');
+    prefix.textContent = `${i + 1}) `;
+    wordBank.appendChild(prefix);
+
+    blockWords.forEach((word) => {
+      const span = document.createElement('span');
+      span.id = 'word-' + (wordIdCounter++); // 一意のIDを付与
+      span.className = 'draggable-word';
+      span.textContent = word;
+      span.draggable = true;
+      
+      const correctItem = currentFour.find(item => item.raw === word);
+      if(correctItem) {
+        span.setAttribute('data-answer-pair', JSON.stringify(correctItem.ans));
+      }
+
+      span.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', word);
+        e.dataTransfer.setData('application/json', span.getAttribute('data-answer-pair'));
+        e.dataTransfer.setData('sourceId', span.id); // IDも渡す
+        clearSelection();
+      });
+
+      span.addEventListener('click', () => {
+        if (span.classList.contains('used')) return;
+        if (span.classList.contains('selected')) {
+          clearSelection();
+        } else {
+          clearSelection();
+          span.classList.add('selected');
+          selectedElement = span;
+          document.body.classList.add('is-selecting');
+        }
+      });
+
+      wordBank.appendChild(span);
+    });
+    block.appendChild(wordBank);
+
+    // --- 文章リスト ---
+    const sList = document.createElement('div');
+    sList.className = 'sentence-list';
+    currentFour.forEach(item => {
+      const p = document.createElement('div');
+      p.className = 'sentence';
+      
+      let html = item.text;
+      const groupId = Math.random().toString(36).substring(7);
+      
+      item.ans.forEach((val, idx) => {
+        html = html.replace('[B]', `<span class="blank" data-ans="${val}" data-group="${groupId}" data-index="${idx}"></span>`);
+      });
+      p.innerHTML = html;
+      
+      // イベント設定
+      p.querySelectorAll('.blank').forEach(blank => {
+        // PC用ドロップ
+        blank.addEventListener('dragover', (e) => e.preventDefault());
+        blank.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const jsonStr = e.dataTransfer.getData('application/json');
+          const sourceId = e.dataTransfer.getData('sourceId');
+          
+          if (jsonStr) {
+            const answerPair = JSON.parse(jsonStr);
+            
+            // 既に埋まっていたら戻す（グループ全体）
+            if (blank.classList.contains('filled')) {
+               returnPhrasalVerbToBank(blank);
+            }
+
+            fillPhrasalVerb(blank, answerPair, sourceId);
+            
+            // バンク側をusedにする
+            const sourceEl = document.getElementById(sourceId);
+            if (sourceEl) sourceEl.classList.add('used');
+          }
+        });
+
+        // ★タップ操作
+        blank.addEventListener('click', () => {
+          if (selectedElement) {
+            // 上書き処理
+            const answerPair = JSON.parse(selectedElement.getAttribute('data-answer-pair'));
+            
+            // 既に埋まっていたら戻す
+            if (blank.classList.contains('filled')) {
+               returnPhrasalVerbToBank(blank);
+            }
+
+            fillPhrasalVerb(blank, answerPair, selectedElement.id);
+            selectedElement.classList.add('used');
+            clearSelection();
+          } else {
+            // クリア機能（タップで戻す）
+            if (blank.classList.contains('filled')) {
+               returnPhrasalVerbToBank(blank);
+            }
+          }
+        });
+      });
+
+      sList.appendChild(p);
+    });
+    block.appendChild(sList);
+    content.appendChild(block);
+  }
+
+  // --- 注釈生成 ---
+  const nArea = document.getElementById('notes-area');
+  nArea.innerHTML = '';
+  allNotes.sort().forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'notes-item';
+    const parts = n.split(' = ');
+    if (parts.length === 2) {
+      item.innerHTML = `<b>${parts[0]}</b> = ${parts[1]}`;
+    } else {
+      item.textContent = n;
+    }
+    nArea.appendChild(item);
+  });
+}
+
+function fillPhrasalVerb(targetBlank, answerPair, sourceId) {
+  const groupId = targetBlank.getAttribute('data-group');
+  const siblings = document.querySelectorAll(`.blank[data-group="${groupId}"]`);
+  
+  siblings.forEach((b, i) => {
+    if (answerPair[i]) {
+      b.textContent = answerPair[i];
+      b.style.color = 'var(--accent)';
+      b.classList.add('filled');
+      b.dataset.sourceId = sourceId; // どの単語由来か記録（全ての空欄に同じIDを持たせる）
+    }
+  });
+}
+
+// グループ単位でバンクに戻す
+function returnPhrasalVerbToBank(targetBlank) {
+  const groupId = targetBlank.getAttribute('data-group');
+  const siblings = document.querySelectorAll(`.blank[data-group="${groupId}"]`);
+  
+  // 最初の要素からsourceIdを取得（どれも同じはず）
+  const sourceId = siblings[0].dataset.sourceId;
+  
+  if (sourceId) {
+    const sourceEl = document.getElementById(sourceId);
+    if (sourceEl) {
+      sourceEl.classList.remove('used');
+    }
+  }
+
+  siblings.forEach(b => {
+    b.textContent = '';
+    b.classList.remove('filled');
+    b.removeAttribute('data-source-id');
+    b.style.color = 'var(--accent)';
+  });
+}
+
+function clearSelection() {
+  document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected'));
+  document.body.classList.remove('is-selecting');
+  selectedElement = null;
+}
+
+function checkAnswers() {
+  clearSelection();
+  document.querySelectorAll('.blank').forEach(b => {
+    const user = b.innerText.trim().toLowerCase();
+    const correct = b.getAttribute('data-ans').toLowerCase();
+    
+    if (!user) return;
+
+    if (user === correct) {
+      b.style.color = 'var(--success)';
+    } else {
+      b.style.color = 'var(--accent)';
+    }
+  });
+}
+
+window.addEventListener('load', generate);
+</script>
+</body>
+</html>

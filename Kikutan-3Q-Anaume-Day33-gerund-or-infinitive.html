@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 33 Gerunds & Infinitives Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】基本設定
+       ========================================= */
+    :root { --primary: #4a90e2; --secondary: #d81b60; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    .bank-container { display: flex; gap: 12px; flex-wrap: wrap; }
+    /* ワードバンクA (Main Verb) */
+    .word-bank { 
+      font-weight: bold; font-size: 14px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    /* ワードバンクB (Gerund/Infinitive) */
+    .word-bank-secondary { 
+      font-weight: bold; font-size: 14px; color: var(--secondary); 
+      background: #fce4ec; border: 1px solid var(--secondary); 
+      padding: 6px 12px; border-radius: 4px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+
+    .draggable-word {
+      cursor: pointer; padding: 2px 6px; border-radius: 4px;
+      transition: all 0.2s; border: 1px solid transparent;
+      user-select: none; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { border: 2px solid #ffcc00; background: #fffbe6; transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    .blank { 
+      display: inline-block; min-width: 80px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 4px; padding: 2px 4px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    body.is-selecting .blank.filled { background: #fff3cd; border-bottom: 1.5px solid #ffcc00; animation: none; opacity: 1; }
+    
+    .blank.filled[data-type="B"] { cursor: context-menu; color: var(--secondary); }
+    .blank.filled[data-type="A"] { color: var(--primary); }
+
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    /* =========================================
+       【PDF印刷用】A4・2枚完結
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      
+      .browser-only { display: none !important; }
+
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      .bank-container { margin-bottom: 3mm !important; }
+      
+      .word-bank, .word-bank-secondary { 
+        background: none !important; border: 1.5px solid #000 !important; 
+        color: #000 !important; font-size: 16px !important; 
+        padding: 2px 8px !important; display: block !important;
+      }
+      .draggable-word {
+        display: inline !important; border: none !important; background: none !important; box-shadow: none !important;
+        padding: 0 !important; color: inherit !important; cursor: default !important; opacity: 1 !important; text-decoration: none !important; pointer-events: none !important;
+      }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 90px !important; background: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="generate()">問題をシャッフル</button>
+    <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+    <button onclick="window.print()" style="background: var(--success);">PDF保存 / 印刷</button>
+  </div>
+  <div class="container">
+    <div class="header"><h1>3級 Day 33 Gerunds & Infinitives</h1></div>
+    <div class="instruction">
+      ★ Fill in the blanks with the correct form of the verbs. 
+      <span class="browser-only"><br>(Right blank: Tap to fill → Tap to switch form → Tap to clear)</span>
+    </div>
+    <div id="exercise-content"></div>
+    <div id="notes-area" class="notes-container"></div>
+  </div>
+  <script>
+    const masterData = [ 
+      { ans: ["goes", "fishing"], raw: ["go", "fish"], text: "Veronica loves the outdoors. She often [B] [B] with her father on weekends." }, 
+      { ans: ["needs", "to eat"], raw: ["need", "eat"], text: "Matt is worried about his skin problems. Erin told him that he [B] [B] more fruit and vegetables." }, 
+      { ans: ["decided", "to buy"], raw: ["decide", "buy"], text: "Mr. Noble went to the department store to buy a present for his wife. There were many nice items, but he [B] [B] a beautiful pearl necklace." }, 
+      { ans: ["forgot", "to feed"], raw: ["forget", "feed"], text: "Timothy [B] [B] his dog this morning, so his brother took care of it." }, 
+      { ans: ["enjoys", "jogging"], raw: ["enjoy", "jog"], text: "Rebecca [B] [B] in the park, but none of her friends thinks it's fun." }, 
+      { ans: ["would like", "to try"], raw: ["would like", "try"], text: "Brian is looking at the menu. Everything looks so delicious, so he says, 'I [B] [B] all of these dishes.'" }, 
+      { ans: ["loves", "gardening|to garden"], raw: ["love", "garden"], text: "Toby's mother has several hobbies, but she [B] [B] the best. She has a beautiful rose garden." }, 
+      { ans: ["plans", "to visit"], raw: ["plan", "visit"], text: "Erin is very interested in Japanese culture. She [B] [B] Kyoto next year." }, 
+      { ans: ["started", "living|to live"], raw: ["start", "live"], text: "Keita moved to the city because his hometown was too far from his college. He [B] [B] alone this spring." }, 
+      { ans: ["finished", "writing"], raw: ["finish", "write"], text: "Anne wants to be a writer in the future. She has just [B] [B] a new story about a brave lion." }, 
+      { ans: ["hopes", "to study"], raw: ["hope", "study"], text: "Tomoko is interested in American politics. She [B] [B] political science at a university in New York." }, 
+      { ans: ["stopped", "eating"], raw: ["stop", "eat"], text: "Mr. Sterling is worried about his health problems, so [B] [B] cookies and cakes. Now he eats apples and oranges for snack." }, 
+      { ans: ["tried", "to ride"], raw: ["try", "ride"], text: "Brian wanted to show off his skills to Rebecca. However, when he [B] [B] a unicycle, he fell off immediately!" }, 
+      { ans: ["can't wait", "to tell"], raw: ["can't wait", "tell"], text: "Bruce [B] [B] his jokes to his friends. He wants to make everyone laugh." }, 
+      { ans: ["learned", "to speak"], raw: ["learn", "speak"], text: "Miki [B] [B] French when she was a child. She lived in Paris for seven years." }, 
+      { ans: ["kept", "showing"], raw: ["keep", "show"], text: "Rebecca won the marathon race last week. She was so proud of it that she [B] [B] her medal to her family and friends." } 
+    ];
+
+    const allNotes = ["pearl = 真珠", "someday = いつか", "traditional = 伝統的な", "political science = 政治学", "immediately = すぐに", "unicycle = 一輪車", "show off one's skills = 能力を見せびらかす"];
+
+    // B群の動詞のスペル変化マップ（-ing形, to不定詞）
+    const verbForms = {
+      "fish": ["fishing", "to fish"],
+      "eat": ["eating", "to eat"],
+      "buy": ["buying", "to buy"],
+      "feed": ["feeding", "to feed"],
+      "jog": ["jogging", "to jog"],
+      "try": ["trying", "to try"],
+      "garden": ["gardening", "to garden"],
+      "visit": ["visiting", "to visit"],
+      "live": ["living", "to live"],
+      "write": ["writing", "to write"],
+      "study": ["studying", "to study"],
+      "ride": ["riding", "to ride"],
+      "tell": ["telling", "to tell"],
+      "speak": ["speaking", "to speak"],
+      "show": ["showing", "to show"]
+    };
+
+    let selectedElement = null;
+    let wordIdCounter = 0;
+
+    function generate() { 
+      const content = document.getElementById('exercise-content'); 
+      content.innerHTML = ''; 
+      wordIdCounter = 0;
+      let shuffled = [...masterData].sort(() => Math.random() - 0.5); 
+      
+      clearSelection();
+
+      for (let i = 0; i < 4; i++) { 
+        const block = document.createElement('div'); 
+        block.className = 'question-block'; 
+        const currentFour = shuffled.slice(i * 4, (i + 1) * 4); 
+        
+        // --- Bank A ---
+        const bankAItems = currentFour.map(item => ({ raw: item.raw[0], correct: item.ans[0] })).sort(() => Math.random() - 0.5);
+        const divA = document.createElement('div'); 
+        divA.className = 'word-bank'; 
+        const prefixA = document.createElement('span');
+        prefixA.textContent = (i + 1) + '-A) ';
+        divA.appendChild(prefixA);
+        
+        bankAItems.forEach(obj => {
+          const span = createDraggable(obj.raw, obj.correct, 'A');
+          divA.appendChild(span);
+        });
+
+        // --- Bank B ---
+        const bankBItems = currentFour.map(item => ({ raw: item.raw[1], correct: item.ans[1] })).sort(() => Math.random() - 0.5);
+        const divB = document.createElement('div'); 
+        divB.className = 'word-bank-secondary'; 
+        const prefixB = document.createElement('span');
+        prefixB.textContent = (i + 1) + '-B) ';
+        divB.appendChild(prefixB);
+
+        bankBItems.forEach(obj => {
+          const span = createDraggable(obj.raw, obj.raw, 'B'); // 原形を持たせる
+          divB.appendChild(span);
+        });
+
+        const bankContainer = document.createElement('div'); 
+        bankContainer.className = 'bank-container'; 
+        bankContainer.appendChild(divA); 
+        bankContainer.appendChild(divB); 
+        block.appendChild(bankContainer); 
+
+        // --- Sentence List ---
+        const list = document.createElement('div'); 
+        list.className = 'sentence-list'; 
+        
+        currentFour.forEach(item => { 
+          const div = document.createElement('div'); 
+          div.className = 'sentence'; 
+          
+          let htmlText = item.text;
+          htmlText = htmlText.replace('[B]', `<span class='blank blank-a' data-type='A' data-ans='${item.ans[0]}'></span>`);
+          htmlText = htmlText.replace('[B]', `<span class='blank blank-b' data-type='B' data-ans='${item.ans[1]}'></span>`);
+          
+          div.innerHTML = htmlText; 
+          
+          div.querySelectorAll('.blank').forEach(blank => {
+            // PC用ドロップ
+            blank.addEventListener('dragover', (e) => e.preventDefault());
+            blank.addEventListener('drop', (e) => {
+              e.preventDefault();
+              const type = e.dataTransfer.getData('type');
+              const dataText = e.dataTransfer.getData('text');
+              const sourceId = e.dataTransfer.getData('sourceId');
+              
+              if (type === blank.dataset.type) {
+                if (type === 'A') {
+                   // Aは単純入力（上書き）
+                   if (blank.classList.contains('filled')) returnWordToBank(blank);
+                   const correctForm = e.dataTransfer.getData('correct');
+                   fillBlank(blank, correctForm, sourceId);
+                   markUsed(sourceId);
+                } else {
+                   // Bはサイクル開始
+                   if (blank.classList.contains('filled')) returnWordToBank(blank);
+                   setupToggleBlank(blank, dataText, sourceId);
+                   markUsed(sourceId);
+                }
+              }
+            });
+
+            // ★タップ操作
+            blank.addEventListener('click', () => {
+              // 1. バンクから単語選択中
+              if (selectedElement) {
+                const selectedType = selectedElement.dataset.type;
+                if (selectedType === blank.dataset.type) {
+                  // 既に埋まってたら戻す
+                  if (blank.classList.contains('filled')) {
+                    returnWordToBank(blank);
+                  }
+
+                  if (selectedType === 'A') {
+                    fillBlank(blank, selectedElement.dataset.correct, selectedElement.id);
+                  } else {
+                    // Bはサイクル開始
+                    const baseWord = selectedElement.textContent;
+                    setupToggleBlank(blank, baseWord, selectedElement.id);
+                  }
+                  
+                  markUsed(selectedElement.id);
+                  clearSelection();
+                }
+              } 
+              // 2. 空欄のみタップ（サイクル or クリア）
+              else if (blank.classList.contains('filled')) {
+                if (blank.dataset.type === 'B') {
+                  // Bはサイクル： Form1 -> Form2 -> Clear(Bank)
+                  cycleVerbForm(blank);
+                } else {
+                  // Aはシンプルにクリア
+                  returnWordToBank(blank);
+                }
+              }
+            });
+          });
+
+          list.appendChild(div); 
+        }); 
+        block.appendChild(list); 
+        content.appendChild(block); 
+      } 
+      
+      const nArea = document.getElementById('notes-area'); 
+      nArea.innerHTML = ''; 
+      allNotes.sort().forEach(n => { 
+        const item = document.createElement('div'); 
+        item.className = 'notes-item'; 
+        const parts = n.split(' = '); 
+        if (parts.length === 2) { 
+          item.innerHTML = '<b>' + parts[0] + '</b> = ' + parts[1]; 
+          nArea.appendChild(item); 
+        } 
+      }); 
+    }
+
+    function createDraggable(text, correctForm, type) {
+      const span = document.createElement('span');
+      span.id = 'word-' + (wordIdCounter++);
+      span.className = 'draggable-word';
+      span.textContent = text;
+      span.draggable = true;
+      span.dataset.type = type;
+      span.dataset.correct = correctForm;
+
+      span.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', text);
+        e.dataTransfer.setData('correct', correctForm);
+        e.dataTransfer.setData('type', type);
+        e.dataTransfer.setData('sourceId', span.id);
+        clearSelection();
+      });
+
+      span.addEventListener('click', () => {
+        if (span.classList.contains('used')) return;
+        if (span.classList.contains('selected')) {
+          clearSelection();
+        } else {
+          clearSelection();
+          span.classList.add('selected');
+          selectedElement = span;
+          document.body.classList.add('is-selecting');
+        }
+      });
+      return span;
+    }
+
+    function fillBlank(blank, text, sourceId) {
+      blank.textContent = text;
+      blank.classList.add('filled');
+      blank.dataset.sourceId = sourceId;
+      if (blank.dataset.type === 'A') {
+        blank.style.color = 'var(--primary)';
+      } else {
+        blank.style.color = 'var(--secondary)';
+      }
+    }
+
+    function markUsed(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('used');
+    }
+
+    function returnWordToBank(blank) {
+      const sourceId = blank.dataset.sourceId;
+      if (sourceId) {
+        const el = document.getElementById(sourceId);
+        if (el) el.classList.remove('used');
+      }
+      blank.textContent = '';
+      blank.classList.remove('filled');
+      blank.removeAttribute('data-source-id');
+      blank.removeAttribute('data-options');
+      blank.removeAttribute('data-currentIndex');
+    }
+
+    // B群: 最初のセット
+    function setupToggleBlank(blank, baseWord, sourceId) {
+      const forms = verbForms[baseWord];
+      if (!forms) {
+        fillBlank(blank, baseWord, sourceId);
+        return;
+      }
+      // データ保存
+      blank.dataset.options = JSON.stringify(forms);
+      blank.dataset.currentIndex = 0; 
+      // 最初のフォームで埋める
+      fillBlank(blank, forms[0], sourceId);
+    }
+
+    // B群: サイクル処理 (Form1 -> Form2 -> Clear)
+    function cycleVerbForm(blank) {
+      if (!blank.dataset.options) {
+        returnWordToBank(blank);
+        return;
+      }
+      
+      const options = JSON.parse(blank.dataset.options);
+      let idx = parseInt(blank.dataset.currentIndex);
+      
+      // 次のインデックスへ
+      idx++;
+      
+      if (idx < options.length) {
+        // 次のフォームを表示
+        blank.textContent = options[idx];
+        blank.dataset.currentIndex = idx;
+      } else {
+        // 全フォーム見終わったら、バンクへ戻す
+        returnWordToBank(blank);
+      }
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected'));
+      document.body.classList.remove('is-selecting');
+      selectedElement = null;
+    }
+
+    // 答え合わせ
+    function checkAnswers() { 
+      clearSelection();
+      document.querySelectorAll('.blank').forEach(b => { 
+        const user = b.innerText.trim().toLowerCase(); 
+        const correctStr = b.getAttribute('data-ans').toLowerCase(); 
+        const correctOptions = correctStr.split('|');
+
+        if (!user) return;
+
+        if (correctOptions.includes(user)) { 
+          b.style.color = 'var(--success)'; 
+        } else { 
+          b.style.color = 'var(--accent)'; 
+        } 
+      }); 
+    } 
+    window.addEventListener('load', generate); 
+  </script>
+</body>
+</html>

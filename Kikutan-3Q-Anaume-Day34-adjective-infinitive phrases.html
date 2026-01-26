@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 34 Infinitives Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】基本設定
+       ========================================= */
+    :root { --primary: #4a90e2; --secondary: #d81b60; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    .bank-container { display: flex; gap: 12px; flex-wrap: wrap; }
+    
+    .word-bank { 
+      font-weight: bold; font-size: 14px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    .word-bank-secondary { 
+      font-weight: bold; font-size: 14px; color: var(--secondary); 
+      background: #fce4ec; border: 1px solid var(--secondary); 
+      padding: 6px 12px; border-radius: 4px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+
+    .draggable-word {
+      cursor: pointer; padding: 2px 6px; border-radius: 4px;
+      transition: all 0.2s; border: 1px solid transparent;
+      user-select: none; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    
+    /* 選択中 */
+    .draggable-word.selected { border: 2px solid #ffcc00; background: #fffbe6; transform: scale(1.05); }
+    
+    /* 使用済み（クリック不可） */
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    .blank { 
+      display: inline-block; min-width: 80px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 4px; padding: 2px 4px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    /* 上書き可能な状態 */
+    body.is-selecting .blank.filled { background: #fff3cd; border-bottom: 1.5px solid #ffcc00; animation: none; opacity: 1; }
+    
+    .blank.filled[data-type="A"] { color: var(--primary); }
+    .blank.filled[data-type="B"] { color: var(--secondary); }
+
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    /* =========================================
+       【PDF印刷用】A4・2枚完結
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      
+      .browser-only { display: none !important; }
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      .bank-container { margin-bottom: 3mm !important; }
+      
+      .word-bank, .word-bank-secondary { 
+        background: none !important; border: 1.5px solid #000 !important; 
+        color: #000 !important; font-size: 16px !important; 
+        padding: 2px 8px !important; display: block !important;
+      }
+      .draggable-word {
+        display: inline !important; border: none !important; background: none !important; box-shadow: none !important;
+        padding: 0 !important; color: inherit !important; cursor: default !important; opacity: 1 !important; text-decoration: none !important; pointer-events: none !important;
+      }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 90px !important; background: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="generate()">問題をシャッフル</button>
+    <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+    <button onclick="window.print()" style="background: var(--success);">PDF保存 / 印刷</button>
+  </div>
+  <div class="container">
+    <div class="header"><h1>3級 Day 34 Infinitives</h1></div>
+    <div class="instruction">
+      ★ Fill in the blanks with the correct words from the banks. (Change the form if necessary.)
+      <span class="browser-only"><br>(Tap a filled blank to return the word to the bank.)</span>
+    </div>
+    <div id="exercise-content"></div>
+    <div id="notes-area" class="notes-container"></div>
+  </div>
+  <script>
+    const group1 = [
+      { ans: ["wants", "to get"], raw: ["want", "get"], text: "Bruce has long hair that goes down to his waist. His mother never says anything about it, but she [B] him [B] a haircut." },
+      { ans: ["told", "to turn off"], raw: ["tell", "turn off"], text: "Masako was studying for the math exam while Yuriko was watching a comedy program and laughing out loud. Masako [B] Yuriko [B] the TV." },
+      { ans: ["helped", "carry"], raw: ["help", "carry"], text: "Brian is kind to everyone. He [B] an old lady [B] her heavy shopping bags to her car the other day." },
+      { ans: ["would like", "to take"], raw: ["would like", "take"], text: "Bruce smelled like a dead fish, so his mother politely said, \"I [B] you [B] a shower, Bruce.\"" }
+    ];
+    const group2 = [
+      { ans: ["asked", "to play"], raw: ["ask", "play"], text: "Kelly was feeling sad, so she [B] Toby [B] a happy song on his violin." },
+      { ans: ["invited", "to give"], raw: ["invite", "give"], text: "Masako was [B] [B] a speech in English at the UN. She prepared carefully and practiced many times." },
+      { ans: ["taught", "to swim"], raw: ["teach", "swim"], text: "Veronica can swim faster than anyone in her class. Her father [B] her [B] when she was four." },
+      { ans: ["waiting", "to finish"], raw: ["wait", "finish"], text: "George is [B] for Timothy [B] his breakfast. He wants to turn on the dishwasher." }
+    ];
+    const group3 = [
+      { ans: ["happy", "to win"], raw: ["happy", "win"], text: "Rebecca ran very fast in the marathon. She was very [B] [B] the gold medal." },
+      { ans: ["able", "to play"], raw: ["able", "play"], text: "The doctor said, \"You will be [B] [B] tennis in three months, Brian.\"" },
+      { ans: ["ready", "to move"], raw: ["ready", "move"], text: "Keita has finished packing his bags. He is [B] [B] to his new apartment in the city." },
+      { ans: ["about", "to start"], raw: ["about", "start"], text: "Shelly is standing on the tennis court. The match is [B] [B], and she is a little nervous." }
+    ];
+    const group4 = [
+      { ans: ["glad", "to help"], raw: ["glad", "help"], text: "When Brian fell off his unicycle, Rebecca was [B] [B] him stand up." },
+      { ans: ["sorry", "to hear"], raw: ["sorry", "hear"], text: "Brian broke his leg while skiing in the mountains. Rebecca was [B] [B] the news." },
+      { ans: ["surprised", "to hear"], raw: ["surprised", "hear"], text: "Timothy said, \"I get nervous around girls.\" Veronica was [B] [B] that because he's never nervous with her." },
+      { ans: ["sure", "to shut"], raw: ["sure", "shut"], text: "Timothy's mother said, \"Be [B] [B] the door, or the dog will run away again!\"" }
+    ];
+
+    const allNotes = [
+      "UN = 国連", "politely = 礼儀正しく", "give a speech = スピーチをする", "break up with 〜 = 〜と別れる", "nervous = 緊張して", "dead fish = 死んだ魚", "dishwasher = 食器洗い機", "down to one's waist = 腰まで", "haircut = 散髪", "laugh out loud = 大声で笑う", "unicycle = 一輪車"
+    ];
+
+    let selectedElement = null;
+    let wordIdCounter = 0; // 一意のID生成用
+
+    function generate() { 
+      const content = document.getElementById('exercise-content'); 
+      content.innerHTML = ''; 
+      wordIdCounter = 0;
+      clearSelection();
+
+      const blocksData = [
+        [...group1].sort(() => Math.random() - 0.5),
+        [...group2].sort(() => Math.random() - 0.5),
+        [...group3].sort(() => Math.random() - 0.5),
+        [...group4].sort(() => Math.random() - 0.5)
+      ];
+
+      blocksData.forEach((currentFour, i) => {
+        const block = document.createElement('div'); 
+        block.className = 'question-block'; 
+        
+        // --- Bank A ---
+        const bankAItems = currentFour.map(item => ({ raw: item.raw[0], correct: item.ans[0] })).sort(() => Math.random() - 0.5);
+        const divA = document.createElement('div'); 
+        divA.className = 'word-bank'; 
+        const prefixA = document.createElement('span');
+        prefixA.textContent = (i + 1) + '-A) ';
+        divA.appendChild(prefixA);
+        
+        bankAItems.forEach(obj => {
+          const span = createDraggable(obj.raw, obj.correct, 'A');
+          divA.appendChild(span);
+        });
+
+        // --- Bank B ---
+        const bankBItems = currentFour.map(item => ({ raw: item.raw[1], correct: item.ans[1] })).sort(() => Math.random() - 0.5);
+        const divB = document.createElement('div'); 
+        divB.className = 'word-bank-secondary'; 
+        const prefixB = document.createElement('span');
+        prefixB.textContent = (i + 1) + '-B) ';
+        divB.appendChild(prefixB);
+
+        bankBItems.forEach(obj => {
+          const span = createDraggable(obj.raw, obj.correct, 'B');
+          divB.appendChild(span);
+        });
+
+        const bankContainer = document.createElement('div'); 
+        bankContainer.className = 'bank-container'; 
+        bankContainer.appendChild(divA); 
+        bankContainer.appendChild(divB); 
+        block.appendChild(bankContainer); 
+
+        // --- Sentence List ---
+        const list = document.createElement('div'); 
+        list.className = 'sentence-list'; 
+        
+        currentFour.forEach(item => { 
+          const div = document.createElement('div'); 
+          div.className = 'sentence'; 
+          
+          let htmlText = item.text;
+          htmlText = htmlText.replace('[B]', `<span class='blank blank-a' data-type='A' data-ans='${item.ans[0]}'></span>`);
+          htmlText = htmlText.replace('[B]', `<span class='blank blank-b' data-type='B' data-ans='${item.ans[1]}'></span>`);
+          
+          div.innerHTML = htmlText; 
+          
+          div.querySelectorAll('.blank').forEach(blank => {
+            // PC用ドロップ
+            blank.addEventListener('dragover', (e) => e.preventDefault());
+            blank.addEventListener('drop', (e) => {
+              e.preventDefault();
+              const type = e.dataTransfer.getData('type');
+              const correctForm = e.dataTransfer.getData('correct');
+              const sourceId = e.dataTransfer.getData('sourceId'); // 元のIDを取得
+              
+              if (type === blank.dataset.type) {
+                // すでに入っているものがあればバンクに戻す
+                if (blank.classList.contains('filled')) {
+                  returnWordToBank(blank);
+                }
+                // 新しい単語をセット
+                fillBlank(blank, correctForm, sourceId);
+                // バンク側をusedにする
+                const sourceEl = document.getElementById(sourceId);
+                if (sourceEl) sourceEl.classList.add('used');
+              }
+            });
+
+            // ★タップ操作
+            blank.addEventListener('click', () => {
+              // 1. バンクから単語を選択中の場合 → 上書き or 新規入力
+              if (selectedElement) {
+                const selectedType = selectedElement.dataset.type;
+                if (selectedType === blank.dataset.type) {
+                  // すでに入っているものがあればバンクに戻す
+                  if (blank.classList.contains('filled')) {
+                    returnWordToBank(blank);
+                  }
+                  
+                  // 新しい単語を入れる
+                  fillBlank(blank, selectedElement.dataset.correct, selectedElement.id);
+                  
+                  // 選んだ単語をusedにする
+                  selectedElement.classList.add('used');
+                  clearSelection();
+                }
+              } 
+              // 2. 選択なしで、埋まっている空欄をタップ → クリア（バンクに戻す）
+              else if (blank.classList.contains('filled')) {
+                returnWordToBank(blank);
+              }
+            });
+          });
+
+          list.appendChild(div); 
+        }); 
+        block.appendChild(list); 
+        content.appendChild(block); 
+      }); 
+      
+      const nArea = document.getElementById('notes-area'); 
+      nArea.innerHTML = ''; 
+      allNotes.sort().forEach(n => { 
+        const item = document.createElement('div'); 
+        item.className = 'notes-item'; 
+        const parts = n.split(' = '); 
+        if (parts.length === 2) { 
+          item.innerHTML = '<b>' + parts[0] + '</b> = ' + parts[1]; 
+          nArea.appendChild(item); 
+        } 
+      }); 
+    }
+
+    function createDraggable(text, correctForm, type) {
+      const span = document.createElement('span');
+      span.id = 'word-' + (wordIdCounter++); // ユニークIDを付与
+      span.className = 'draggable-word';
+      span.textContent = text;
+      span.draggable = true;
+      span.dataset.type = type;
+      span.dataset.correct = correctForm;
+
+      span.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', text);
+        e.dataTransfer.setData('correct', correctForm);
+        e.dataTransfer.setData('type', type);
+        e.dataTransfer.setData('sourceId', span.id); // IDも渡す
+        clearSelection();
+      });
+
+      span.addEventListener('click', () => {
+        if (span.classList.contains('used')) return;
+        if (span.classList.contains('selected')) {
+          clearSelection();
+        } else {
+          clearSelection();
+          span.classList.add('selected');
+          selectedElement = span;
+          document.body.classList.add('is-selecting');
+        }
+      });
+      return span;
+    }
+
+    function fillBlank(blank, text, sourceId) {
+      blank.textContent = text;
+      blank.classList.add('filled');
+      blank.dataset.sourceId = sourceId; // どの単語由来か記録
+      if (blank.dataset.type === 'A') {
+        blank.style.color = 'var(--primary)';
+      } else {
+        blank.style.color = 'var(--secondary)';
+      }
+    }
+
+    // 単語をバンクに戻す処理
+    function returnWordToBank(blank) {
+      const sourceId = blank.dataset.sourceId;
+      if (sourceId) {
+        const sourceEl = document.getElementById(sourceId);
+        if (sourceEl) {
+          sourceEl.classList.remove('used');
+        }
+      }
+      blank.textContent = '';
+      blank.classList.remove('filled');
+      blank.removeAttribute('data-source-id');
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected'));
+      document.body.classList.remove('is-selecting');
+      selectedElement = null;
+    }
+
+    function checkAnswers() { 
+      clearSelection();
+      document.querySelectorAll('.blank').forEach(b => { 
+        const user = b.innerText.trim().toLowerCase(); 
+        const correct = b.getAttribute('data-ans').toLowerCase(); 
+        if (!user) return;
+
+        if (user === correct) { 
+          b.style.color = 'var(--success)'; 
+        } else { 
+          b.style.color = 'var(--accent)'; 
+        } 
+      }); 
+    } 
+    window.addEventListener('load', generate); 
+  </script>
+</body>
+</html>
