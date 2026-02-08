@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 13 Fill in the Blanks Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】基本設定
+       ========================================= */
+    :root { --primary: #4a90e2; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    .word-bank { 
+      font-weight: bold; font-size: 14.5px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; align-self: flex-start; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    .draggable-word {
+      cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;
+      border: 1px solid transparent; user-select: none; background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { background: var(--selected); color: #000; border: 1px solid #cfa000; box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.4); transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+    
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    .blank { 
+      display: inline-block; min-width: 90px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 4px; padding: 2px 5px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    body.is-selecting .blank.filled { background: none; border-bottom: 1.5px solid #333; animation: none; opacity: 0.6; }
+
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+    
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+    
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      .word-bank { background: none !important; border: 1.5px solid #000 !important; color: #000 !important; font-size: 16px !important; padding: 2px 8px !important; margin-bottom: 3mm !important; display: block !important; }
+      .draggable-word { display: inline !important; border: none !important; background: none !important; box-shadow: none !important; padding: 0 !important; color: inherit !important; cursor: default !important; opacity: 1 !important; text-decoration: none !important; pointer-events: none !important; }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 90px !important; background: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls">
+  <button onclick="generate()">問題をシャッフル</button>
+  <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+  <button onclick="window.print()" style="background: #34c759;">PDF保存 / 印刷</button>
+</div>
+
+<div class="container">
+  <div class="header"><h1>3級 Day 13 Fill in the Blanks</h1></div>
+  <div class="instruction">★ Fill in the blanks with the correct words from the bank.</div>
+  <div id="exercise-content"></div>
+  <div id="notes-area" class="notes-container"></div>
+</div>
+
+<script>
+const masterData = [
+  { ans: "toy", text: "Jessie likes going to the [B] store. Today, he will buy a superhero doll." },
+  { ans: "uniform", text: "On weekdays, Masako gets dressed in her school [B] in the morning." },
+  { ans: "word", text: "Students need to learn 32 [B]s a week to complete this workbook." },
+  { ans: "activities", text: "Many students enjoy club [B]. Erin doesn't like playing sports, so she joined the book club." },
+  { ans: "artist", text: "Everyone thinks Bruce will become an [B] in the future, but he says, \"I draw pictures just for fun.\"" },
+  { ans: "coat", text: "Kelly puts on a warm [B] before she goes out for a walk in the woods." },
+  { ans: "fever", text: "Erin didn't come to school yesterday because she had a [B]." },
+  { ans: "gloves", text: "When Bruce's mother cleans his room, she has to wear [B]. Last week, she found a dead mouse under his bed!" },
+  { ans: "hobby", text: "Daniel likes playing the drums in his band. It's his [B]." },
+  { ans: "musician", text: "Toby is a [B]. He gives concerts on weekends." },
+  { ans: "seat", text: "Gilbert went into a café and took a [B] at the counter." },
+  { ans: "farmer", text: "Daniel has a friend who is a [B]. He likes to visit him and drink some fresh milk." },
+  { ans: "fireworks", text: "Masako and Yuriko watched the [B] last night. They enjoyed the colorful show!" },
+  { ans: "holiday", text: "On national [B]s, Masako's father puts up the Japanese national flag in front of the house." },
+  { ans: "gate", text: "The school [B] is closed at 7:00 PM. No one can come in after that." },
+  { ans: "key", text: "Anne can't get in the house because she can't find her [B]. She checked her pockets and bag, but it's nowhere to be found." }
+];
+
+// 注釈リストから選択肢（toy, farmer, fever等）をすべて削除
+const allNotes = [
+  "get dressed = 服を着る", 
+  "nowhere to be found = どこにも見当たらない",
+  "put up = 掲げる・掲揚する",
+  "woods = 森",
+  "national flag = 国旗",
+  "dead mouse = 死んだネズミ"
+];
+
+let selectedElement = null;
+
+function generate() {
+  const content = document.getElementById('exercise-content');
+  content.innerHTML = '';
+  let shuffled = [...masterData].sort(() => Math.random() - 0.5);
+  clearSelection();
+
+  for (let i = 0; i < 4; i++) {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    const currentFour = shuffled.slice(i * 4, (i + 1) * 4);
+    const usageMap = {};
+    currentFour.forEach(item => { usageMap[item.ans] = (usageMap[item.ans] || 0) + 1; });
+    const blockWords = currentFour.map(item => item.ans).sort(() => Math.random() - 0.5);
+    
+    const wordBank = document.createElement('div');
+    wordBank.className = 'word-bank';
+    const prefix = document.createElement('span');
+    prefix.textContent = `${i + 1}) `;
+    wordBank.appendChild(prefix);
+
+    blockWords.forEach((word) => {
+      const span = document.createElement('span');
+      span.className = 'draggable-word';
+      span.textContent = word;
+      span.setAttribute('data-uses-left', usageMap[word] || 1);
+      span.addEventListener('click', () => {
+        if (span.classList.contains('used')) return;
+        if (span.classList.contains('selected')) { clearSelection(); } 
+        else { clearSelection(); span.classList.add('selected'); selectedElement = span; document.body.classList.add('is-selecting'); }
+      });
+      wordBank.appendChild(span);
+    });
+    block.appendChild(wordBank);
+
+    const sList = document.createElement('div');
+    sList.className = 'sentence-list';
+    currentFour.forEach((item, index) => {
+      const p = document.createElement('div');
+      p.className = 'sentence';
+      const displayNum = (i * 4) + index + 1;
+      let html = `${displayNum}) ${item.text}`;
+      html = html.replace('[B]', `<span class="blank" data-ans="${item.ans}"></span>`);
+      p.innerHTML = html;
+      p.querySelectorAll('.blank').forEach(blank => {
+        blank.addEventListener('click', () => {
+          if (selectedElement) {
+            if (blank.getAttribute('data-origin-word')) restoreWord(blank.getAttribute('data-origin-word')); 
+            fillBlank(blank, selectedElement.textContent);
+            let uses = parseInt(selectedElement.getAttribute('data-uses-left'));
+            uses--;
+            selectedElement.setAttribute('data-uses-left', uses);
+            if (uses <= 0) { selectedElement.classList.add('used'); clearSelection(); } 
+            else { clearSelection(); }
+          } else if (blank.textContent) {
+            restoreWord(blank.textContent);
+            blank.textContent = '';
+            blank.classList.remove('filled');
+            blank.removeAttribute('data-origin-word');
+          }
+        });
+      });
+      sList.appendChild(p);
+    });
+    block.appendChild(sList);
+    content.appendChild(block);
+  }
+
+  const nArea = document.getElementById('notes-area');
+  nArea.innerHTML = '';
+  allNotes.sort().forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'notes-item';
+    const parts = n.split(' = ');
+    if (parts.length === 2) {
+      item.innerHTML = `<b>${parts[0]}</b> = ${parts[1]}`;
+      nArea.appendChild(item);
+    }
+  });
+}
+
+function fillBlank(blankEl, text) {
+  blankEl.textContent = text;
+  blankEl.classList.add('filled');
+  blankEl.setAttribute('data-origin-word', text);
+  blankEl.style.color = 'var(--accent)';
+}
+
+function restoreWord(text) {
+  const words = document.querySelectorAll('.draggable-word');
+  for (let w of words) {
+    if (w.textContent === text) {
+      let uses = parseInt(w.getAttribute('data-uses-left'));
+      uses++;
+      w.setAttribute('data-uses-left', uses);
+      w.classList.remove('used');
+      break; 
+    }
+  }
+}
+
+function clearSelection() {
+  document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected'));
+  document.body.classList.remove('is-selecting');
+  selectedElement = null;
+}
+
+function checkAnswers() {
+  document.querySelectorAll('.blank').forEach(b => {
+    const user = b.innerText.trim().toLowerCase();
+    const correct = b.getAttribute('data-ans').toLowerCase();
+    if (!user) return;
+    b.style.color = (user === correct) ? 'var(--success)' : 'var(--accent)';
+  });
+}
+
+window.addEventListener('load', generate);
+</script>
+</body>
+</html>
