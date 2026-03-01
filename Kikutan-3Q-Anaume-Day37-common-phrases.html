@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 37 Common Phrases Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】基本設定
+       ========================================= */
+    :root { --primary: #4a90e2; --secondary: #d81b60; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    .bank-container { display: flex; gap: 12px; flex-wrap: wrap; }
+    .word-bank { font-weight: bold; font-size: 14px; color: var(--primary); background: #eef6ff; border: 1px solid var(--primary); padding: 6px 12px; border-radius: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .word-bank-secondary { font-weight: bold; font-size: 14px; color: var(--secondary); background: #fce4ec; border: 1px solid var(--secondary); padding: 6px 12px; border-radius: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+    .draggable-word { cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: all 0.2s; border: 1px solid transparent; user-select: none; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { border: 2px solid #ffcc00; background: #fffbe6; transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; }
+
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    .blank { display: inline-block; min-width: 80px; border-bottom: 1.5px solid #333; text-align: center; font-weight: bold; color: var(--accent); margin: 0 4px; padding: 2px 4px; cursor: pointer; transition: background 0.2s; vertical-align: bottom; height: 1.4em; }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    body.is-selecting .blank.filled { background: #fff3cd; border-bottom: 1.5px solid #ffcc00; animation: none; opacity: 1; }
+    
+    .blank.filled[data-type="A"] { color: var(--primary); }
+    .blank.filled[data-type="B"] { color: var(--secondary); }
+
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    /* =========================================
+       【PDF印刷用】モノクロ最適化
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; color: #000 !important; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      .browser-only, .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      
+      .instruction { border-left: 3px solid #000 !important; font-size: 13px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      .instruction::after { content: "★ Fill in the blanks. (Change the verb form if necessary.)"; display: block; margin-top: -1.2em; background: white; position: relative; }
+      .instruction span { display: none; }
+
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      
+      .word-bank, .word-bank-secondary { background: none !important; border: 1.5px solid #000 !important; color: #000 !important; font-size: 16px !important; padding: 2px 8px !important; display: block !important; }
+      
+      .draggable-word { display: inline !important; border: none !important; background: none !important; box-shadow: none !important; padding: 0 !important; color: inherit !important; cursor: default !important; opacity: 1 !important; text-decoration: none !important; pointer-events: none !important; }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 90px !important; background: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="generate()">問題をシャッフル</button>
+    <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+    <button onclick="window.print()" style="background: var(--success);">PDF保存 / 印刷</button>
+  </div>
+  <div class="container">
+    <div class="header"><h1>3級 Day 37 Common Phrases</h1></div>
+    <div class="instruction">
+      ★ Fill in the blanks with the correct words. (A: Blue Bank / B: Red Bank) (Change the form if necessary.)
+      <span class="browser-only"><br>(Tap a filled blank to return the word to the bank.)</span>
+    </div>
+    <div id="exercise-content"></div>
+    <div id="notes-area" class="notes-container"></div>
+  </div>
+  <script>
+    const group1 = [
+      { ans: ["shook", "hands"], raw: ["shake", "hands"], text: "After a successful meeting, Mr. Noble [B] [B] with the president of the partner company." },
+      { ans: ["was", "over"], raw: ["be", "over"], text: "Timothy was happy because the difficult math test [B] finally [B]." },
+      { ans: ["see", "a doctor"], raw: ["see", "a doctor"], text: "Keita is feeling very sick. Maybe the old shellfish he ate last night has something to do with it. He says, \"I need to [B] [B].\"" },
+      { ans: ["were", "sold out"], raw: ["be", "sold out"], text: "Miki wanted to buy a new comic book, but all the copies [B] [B] at the bookstore." }
+    ];
+    const group2 = [
+      { ans: ["came", "true"], raw: ["come", "true"], text: "Toby practiced the violin every day. His dream of becoming a professional musician finally [B] [B]." },
+      { ans: ["go on", "a trip"], raw: ["go on", "a trip"], text: "Masako's family will [B] [B] to Hokkaido this winter. Yuriko is excited to ski for the first time, and Masako is looking forward to the Snow Festival." },
+      { ans: ["have", "a chance"], raw: ["have", "a chance"], text: "Masako's school offers an overseas program. Ten top students [B] [B] to study English in Australia for two months. Masako wants to win that spot!" },
+      { ans: ["take", "a walk"], raw: ["take", "a walk"], text: "The weather was very nice, so Jessie decided to [B] [B] in the park." }
+    ];
+    const group3 = [
+      { ans: ["felt", "sick"], raw: ["feel", "sick"], text: "Mr. Sterling [B] [B] after eating a huge steak and three desserts." },
+      { ans: ["gotten", "better"], raw: ["get", "better"], text: "Masako's English communication skills have [B] much [B] since she started taking online lessons six months ago." },
+      { ans: ["was sick", "in bed"], raw: ["be sick", "in bed"], text: "Timothy couldn't go to school yesterday because he [B] [B] with a 39°C fever." },
+      { ans: ["enjoyed", "themselves"], raw: ["enjoy", "oneself"], text: "Miki and Sam are big anime fans! They [B] [B] at the anime convention last weekend." }
+    ];
+    const group4 = [
+      { ans: ["make", "friends with"], raw: ["make", "friends with"], text: "A new student came to class. Timothy wanted to [B] [B] him." },
+      { ans: ["get", "married"], raw: ["get", "married"], text: "Gilbert and his girlfriend will [B] [B] in June. Everyone is invited to the wedding." },
+      { ans: ["had better", "see a doctor"], raw: ["had better", "see a doctor"], text: "Mr. Sterling looks very pale. He [B] [B] immediately." },
+      { ans: ["be", "back"], raw: ["be", "back"], text: "Mr. Noble went to Tokyo for work. He will [B] [B] in New York next Friday." }
+    ];
+
+    const allNotes = ["partner company = 協力会社", "Snow Festival = 雪まつり", "immediately = すぐに", "pale = 顔色が悪い", "convention = 大会・イベント", "fever = 熱", "shellfish = 貝類"];
+
+    let selectedElement = null;
+    let wordIdCounter = 0;
+
+    function generate() { 
+      const content = document.getElementById('exercise-content'); 
+      content.innerHTML = ''; wordIdCounter = 0; clearSelection();
+      const blocksData = [[...group1], [...group2], [...group3], [...group4]];
+
+      blocksData.forEach((currentFour, i) => {
+        const block = document.createElement('div'); block.className = 'question-block'; 
+        const divA = document.createElement('div'); divA.className = 'word-bank'; 
+        divA.innerHTML = `<span>${i + 1})-A) </span>`;
+        const divB = document.createElement('div'); divB.className = 'word-bank-secondary'; 
+        divB.innerHTML = `<span>${i + 1})-B) </span>`;
+
+        const bankAItems = currentFour.map(item => ({ raw: item.raw[0], correct: item.ans[0] })).sort(() => Math.random() - 0.5);
+        const bankBItems = currentFour.map(item => ({ raw: item.raw[1], correct: item.ans[1] })).sort(() => Math.random() - 0.5);
+
+        bankAItems.forEach(obj => divA.appendChild(createDraggable(obj.raw, obj.correct, 'A')));
+        bankBItems.forEach(obj => divB.appendChild(createDraggable(obj.raw, obj.correct, 'B')));
+
+        const bankContainer = document.createElement('div'); bankContainer.className = 'bank-container'; 
+        bankContainer.appendChild(divA); bankContainer.appendChild(divB); 
+        block.appendChild(bankContainer);
+
+        const list = document.createElement('div'); list.className = 'sentence-list'; 
+        currentFour.sort(() => Math.random() - 0.5).forEach(item => { 
+          const div = document.createElement('div'); div.className = 'sentence'; 
+          div.innerHTML = item.text.replace('[B]', `<span class='blank' data-type='A' data-ans='${item.ans[0]}'></span>`)
+                                    .replace('[B]', `<span class='blank' data-type='B' data-ans='${item.ans[1]}'></span>`);
+          
+          div.querySelectorAll('.blank').forEach(blank => {
+            blank.onclick = () => {
+              if (selectedElement && selectedElement.dataset.type === blank.dataset.type) {
+                if (blank.classList.contains('filled')) returnWordToBank(blank);
+                fillBlank(blank, selectedElement.dataset.correct, selectedElement.id);
+                selectedElement.classList.add('used'); clearSelection();
+              } else if (blank.classList.contains('filled')) { returnWordToBank(blank); }
+            };
+          });
+          list.appendChild(div); 
+        }); 
+        block.appendChild(list); content.appendChild(block);
+      }); 
+      
+      const nArea = document.getElementById('notes-area'); 
+      nArea.innerHTML = ''; 
+      allNotes.sort().forEach(n => { 
+        const parts = n.split(' = ');
+        nArea.innerHTML += `<div class='notes-item'><b>${parts[0]}</b> = ${parts[1]}</div>`;
+      }); 
+    }
+
+    function createDraggable(text, correct, type) {
+      const span = document.createElement('span'); span.id = 'word-' + (wordIdCounter++);
+      span.className = 'draggable-word'; span.textContent = text; span.dataset.type = type; span.dataset.correct = correct;
+      span.onclick = () => { if (!span.classList.contains('used')) { clearSelection(); span.classList.add('selected'); selectedElement = span; document.body.classList.add('is-selecting'); } };
+      return span;
+    }
+
+    function fillBlank(blank, text, id) { blank.textContent = text; blank.classList.add('filled'); blank.dataset.sourceId = id; }
+    function returnWordToBank(blank) { const source = document.getElementById(blank.dataset.sourceId); if (source) source.classList.remove('used'); blank.textContent = ''; blank.classList.remove('filled'); }
+    function clearSelection() { document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected')); document.body.classList.remove('is-selecting'); selectedElement = null; }
+    function checkAnswers() { document.querySelectorAll('.blank').forEach(b => { if (b.textContent) b.style.color = (b.textContent.toLowerCase() === b.dataset.ans.toLowerCase()) ? 'var(--success)' : 'var(--accent)'; }); }
+    window.onload = generate;
+  </script>
+</body>
+</html>
