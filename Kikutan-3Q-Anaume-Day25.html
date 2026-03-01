@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day25 Quick Review Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #4a90e2; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    .word-bank { 
+      font-weight: bold; font-size: 14.5px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; align-self: flex-start; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    .draggable-word {
+      cursor: pointer; padding: 4px 8px; border-radius: 4px; transition: all 0.2s;
+      border: 1px solid transparent; user-select: none; background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { background: var(--selected); color: #000; border: 1px solid #cfa000; box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.4); transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+    
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    .blank { 
+      display: inline-block; min-width: 90px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 4px; padding: 2px 5px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    body.is-selecting .blank.filled { background: none; border-bottom: 1.5px solid #333; animation: none; opacity: 0.6; }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+    }
+    
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+    
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; color: #000 !important; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; color: #000 !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      .word-bank { background: none !important; border: 1.5px solid #000 !important; color: #000 !important; font-size: 16px !important; display: block !important; }
+      .draggable-word { display: inline !important; border: none !important; background: none !important; box-shadow: none !important; padding: 0 !important; color: inherit !important; cursor: default !important; opacity: 1 !important; text-decoration: none !important; pointer-events: none !important; }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 90px !important; background: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; page-break-inside: avoid; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="controls">
+  <button onclick="generate()">問題をシャッフル</button>
+  <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+  <button onclick="window.print()" style="background: #34c759;">PDF保存 / 印刷</button>
+</div>
+
+<div class="container">
+  <div class="header"><h1>3級 Day25 Quick Review Challenge</h1></div>
+  <div class="instruction">★ Fill in the blanks with the correct words from the bank.</div>
+  <div id="exercise-content"></div>
+  <div id="notes-area" class="notes-container"></div>
+</div>
+
+<script>
+const masterData = [
+  { ans: "often", text: "Mr. Noble [B] travels around the United States on business because he is the president of an IT company." },
+  { ans: "together", text: "Timothy and Veronica are good friends, so they spend time [B] after school. They like to go on adventures in the forest." },
+  { ans: "usually", text: "Erica has a stressful job as a lawyer, so she [B] drinks chamomile tea to relax before going to bed." },
+  { ans: "already", text: "Sam borrowed ten comic books from Miki this morning, but he had [B] finished reading all of them by lunchtime!" },
+  { ans: "later", text: "Mr. Sterling ate too much at the food festival, so he felt sick [B]." },
+  { ans: "finally", text: "Shelly practiced very hard every day, and she [B] won the tennis match. Her effort paid off." },
+  { ans: "maybe", text: "George believes people will travel to the moon in ten years. He said, \"[B] you and I can go there for a cheap price.\"" },
+  { ans: "outside", text: "When Brian heard someone shouting from the street, he ran [B] to see what was happening." },
+  { ans: "yet", text: "Miki lent her favorite comic book to Sam three weeks ago. She is very angry because he hasn't returned it [B]." },
+  { ans: "early", text: "Mr. Noble always goes to the airport [B] because he doesn't want to miss his flight." },
+  { ans: "once", text: "Brian wanted to see an action movie, but Rebecca said she had seen it [B]. They watched a sad love story instead, and the date was very boring." },
+  { ans: "instead", text: "Miki made a mistake and used salt [B] of sugar when she was making cookies." },
+  { ans: "late", text: "Timothy stayed up [B] to watch the stars with his telescope. He is very interested in astronomy." },
+  { ans: "soon", text: "Keita will be a university student next month. His hometown is too far from the university, so he is moving to a big city [B]." },
+  { ans: "twice", text: "Anne checked her bag [B] for her phone, but it wasn't there. She probably left it at home again." },
+  { 
+  ans: "almost", 
+  text: "Brian was so surprised by Rebecca's beauty that he [B] fell down when he saw her. He quickly put his hands on the wall to stay standing." 
+}
+];
+
+const allNotes = [
+  "on business = 仕事で", "pay off = 報われる", "effort = 努力", "miss a flight = 飛行機に乗り遅れる", "instead of = ～の代わりに", "stay up late = 夜更かしする", "astronomy = 天文学", "chamomile tea = カモミールティー", "shout = 叫ぶ", "telescope = 望遠鏡", "barely = かろうじて"
+];
+
+let selectedElement = null;
+
+function generate() {
+  const content = document.getElementById('exercise-content');
+  content.innerHTML = '';
+  let shuffledData = [...masterData].sort(() => Math.random() - 0.5);
+  clearSelection();
+
+  for (let i = 0; i < 4; i++) {
+    const block = document.createElement('div');
+    block.className = 'question-block';
+    const currentFour = shuffledData.slice(i * 4, (i + 1) * 4);
+    const blockWords = currentFour.map(item => item.ans).sort(() => Math.random() - 0.5);
+    
+    const wordBank = document.createElement('div');
+    wordBank.className = 'word-bank';
+    wordBank.innerHTML = `<span>Group ${i + 1}: </span>`;
+
+    blockWords.forEach((word) => {
+      const span = document.createElement('span');
+      span.className = 'draggable-word';
+      span.textContent = word;
+      span.draggable = true;
+      span.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', word); clearSelection(); });
+      span.addEventListener('click', () => {
+        if (span.classList.contains('used')) return;
+        if (span.classList.contains('selected')) { clearSelection(); }
+        else { clearSelection(); span.classList.add('selected'); selectedElement = span; document.body.classList.add('is-selecting'); }
+      });
+      wordBank.appendChild(span);
+    });
+    block.appendChild(wordBank);
+
+    const sList = document.createElement('div');
+    sList.className = 'sentence-list';
+    currentFour.forEach(item => {
+      const p = document.createElement('div');
+      p.className = 'sentence';
+      const isStartOfSentence = item.text.indexOf('[B]') === 0 || item.text.includes('"[B]');
+      p.innerHTML = item.text.replace('[B]', `<span class="blank" data-ans="${item.ans}" data-start="${isStartOfSentence}"></span>`);
+      const blank = p.querySelector('.blank');
+      blank.addEventListener('dragover', (e) => e.preventDefault());
+      blank.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const data = e.dataTransfer.getData('text/plain');
+        if (data) fillBlank(blank, data);
+      });
+      blank.addEventListener('click', () => {
+        if (selectedElement) {
+          if (blank.getAttribute('data-origin-word')) restoreWord(blank.getAttribute('data-origin-word'));
+          let wordToInsert = selectedElement.textContent;
+          if (blank.getAttribute('data-start') === 'true') { wordToInsert = wordToInsert.charAt(0).toUpperCase() + wordToInsert.slice(1); }
+          fillBlank(blank, wordToInsert);
+          selectedElement.classList.add('used');
+          clearSelection();
+        } else if (blank.textContent) {
+          restoreWord(blank.textContent);
+          blank.textContent = '';
+          blank.classList.remove('filled');
+          blank.removeAttribute('data-origin-word');
+          blank.style.color = 'var(--accent)';
+        }
+      });
+      sList.appendChild(p);
+    });
+    block.appendChild(sList);
+    content.appendChild(block);
+  }
+
+  const nArea = document.getElementById('notes-area');
+  nArea.innerHTML = '';
+  allNotes.sort().forEach(n => {
+    const item = document.createElement('div');
+    item.className = 'notes-item';
+    const parts = n.split(' = ');
+    if (parts.length === 2) { item.innerHTML = `<b>${parts[0]}</b> = ${parts[1]}`; nArea.appendChild(item); }
+  });
+}
+
+function fillBlank(blankEl, text) { blankEl.textContent = text; blankEl.style.color = 'var(--accent)'; blankEl.classList.add('filled'); blankEl.setAttribute('data-origin-word', text); }
+function restoreWord(text) {
+  const words = document.querySelectorAll('.draggable-word');
+  const searchText = text.toLowerCase();
+  for (let w of words) { if (w.textContent.toLowerCase() === searchText && w.classList.contains('used')) { w.classList.remove('used'); break; } }
+}
+function clearSelection() { document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected')); document.body.classList.remove('is-selecting'); selectedElement = null; }
+function checkAnswers() {
+  clearSelection();
+  document.querySelectorAll('.blank').forEach(b => {
+    const user = b.innerText.trim().toLowerCase();
+    const correct = b.getAttribute('data-ans').toLowerCase();
+    if (user) b.style.color = (user === correct) ? 'var(--success)' : 'var(--accent)';
+  });
+}
+window.onload = generate;
+</script>
+</body>
+</html>
