@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 40 Common Phrases Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #4a90e2; --bg: #f0f4f8; --white: #ffffff; --success: #34c759; --error: #d0021b; --selected: #ffcc00; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .browser-view { width: 90%; max-width: 800px; margin: 40px auto; background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header { border-bottom: 2px solid var(--primary); margin-bottom: 20px; display: flex; justify-content: flex-end; align-items: center; }
+    .header h1 { font-size: 22px; color: var(--primary); margin: 0; }
+    
+    .question-text { font-size: 19px; line-height: 1.7; margin-bottom: 20px; color: #333; min-height: 4em; }
+    .blank-space { color: var(--error); font-weight: bold; border-bottom: 2px solid #333; padding: 0 10px; display: inline-block; min-width: 180px; text-align: center; }
+    
+    .hint-box { font-size: 14px; color: #555; font-style: italic; margin-bottom: 20px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; display: inline-block; border-left: 3px solid #cbd5e1; }
+    .hint-box:empty { display: none; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .option-btn { padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 16px; transition: all 0.2s; text-align: left; }
+    .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #f0f7ff; }
+    .option-btn.selected-wrong { background: #fee2e2; border-color: var(--error); color: var(--error); cursor: not-allowed; }
+    .option-btn.selected-correct { background: var(--success); color: white; border-color: var(--success); }
+
+    .controls { margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    #feedback { font-weight: bold; font-size: 18px; height: 1.5em; }
+    #next-btn { padding: 12px 40px; border: none; border-radius: 6px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: none; }
+    .progress { font-size: 14px; color: #666; margin-right: auto; }
+
+    .nav-btns-fixed { position: fixed; top: 15px; left: 15px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+    .fixed-btn { padding: 10px 15px; border: none; border-radius: 6px; background: #333; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    #print-content { display: none; }
+
+    @media print {
+      body { background: white; }
+      .browser-view, .nav-btns-fixed { display: none !important; }
+      #print-content { display: block !important; padding: 5mm; }
+      .print-page { page-break-after: always; color: #000; }
+      .print-header { border-bottom: 1.5px solid #000; margin-bottom: 4mm; display: flex; justify-content: flex-end; }
+      .print-header h1 { font-size: 17px; margin: 0; }
+      .instruction { font-size: 12.5px; font-weight: bold; margin-bottom: 5mm; border-left: 3px solid #000; padding-left: 10px; }
+      .print-question { font-size: 15px; line-height: 1.8; margin-bottom: 5mm; }
+      .print-blank { display: inline-block; width: 220px; border-bottom: 1px solid #000; margin: 0 5px; vertical-align: bottom; }
+      .print-options-list { font-size: 12px; margin-top: 3px; font-style: italic; font-weight: bold; color: #444; }
+      .notes-container { border-top: 1.2px solid #000; margin-top: 5mm; padding-top: 3mm; font-size: 11px; display: flex; flex-wrap: wrap; gap: 2px 15px; }
+      .notes-item b { color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="nav-btns-fixed">
+  <button class="fixed-btn" onclick="window.print()">PDF保存 / 印刷</button>
+  <button class="fixed-btn" onclick="location.reload()" style="background:#ff9500;">最初から解く</button>
+</div>
+
+<div class="browser-view">
+  <div class="header">
+    <div class="progress">Question <span id="current-idx">1</span> / 16</div>
+    <h1>3級 Day 40 Common Phrases</h1>
+  </div>
+  
+  <div class="quiz-area">
+    <div class="question-text" id="q-text"></div>
+    <div class="hint-box" id="q-hint"></div>
+    <div class="options-grid" id="q-options"></div>
+  </div>
+
+  <div class="controls">
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="nextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<div id="print-content">
+  <div class="print-page">
+    <div class="print-header"><h1>3級 Day 40 Common Phrases</h1></div>
+    <div class="instruction">★ Complete the sentences using the best phrase from the choices.</div>
+    <div id="print-list-1"></div>
+  </div>
+  <div class="print-page">
+    <div style="margin-top: 10mm;" id="print-list-2"></div>
+    <div id="print-notes" class="notes-container"></div>
+  </div>
+</div>
+
+<script>
+const quizDataRaw = [
+  { 
+    q: "Mr. Sterling received a call from Jennifer, his former girlfriend. He was so excited because they hadn't talked to each other ______.", 
+    ans: "for a long time", 
+    dummy: ["on foot", "in a hurry", "on sale"], 
+    note: "former girlfriend = 元カノ" 
+  },
+  { 
+    q: "Sam looks shy and quiet at work, but ______ he loves to play loud music and do a strange, energetic 'ninja dance' at home! His coworkers would be shocked to see his secret side.", 
+    ans: "in fact", 
+    dummy: ["for example", "by the way", "as usual"], 
+    note: "" 
+  },
+  { 
+    q: "Ellie grows many strawberries in her garden. She makes many things with them. ______, she makes cakes, jam, and even pies.", 
+    ans: "for example", 
+    dummy: ["at least", "on business", "these days"], 
+    note: "" 
+  },
+  { 
+    q: "Brian heard someone screaming outside. He didn't know what was happening, so he jumped out of his house ______ to see the situation.", 
+    ans: "in a hurry", 
+    dummy: ["on time", "for a while", "this way"], 
+    note: "" 
+  },
+  { 
+    q: "Jessie: I saw you at the theater ______! I thought it was unusual for you to be there.<br>Kelly: I really wanted to see the documentary about baby monkeys! I went to the theater for the first time in five years!", 
+    ans: "the other day", 
+    dummy: ["in a minute", "for a long time", "on business"], 
+    note: "" 
+  },
+  { 
+    q: "“Welcome to our restaurant. Please come ______,” the waiter said as he showed Mr. Noble to a table.", 
+    ans: "this way", 
+    dummy: ["by the way", "on foot", "on sale"], 
+    note: "" 
+  },
+  { 
+    q: "Gilbert: Your concert was wonderful! ______, I'm having a birthday party for my father soon. Could you play some songs for $2,000?<br>Toby: I'd love to!", 
+    ans: "By the way", 
+    dummy: ["In fact", "As usual", "For a while"], 
+    note: "" 
+  },
+  { 
+    q: "Erica: It takes 30 minutes to get to the station ______, and only five minutes by bus.<br>Jessie: But the next bus is in an hour! I think we should walk!", 
+    ans: "on foot", 
+    dummy: ["on business", "on time", "on sale"], 
+    note: "" 
+  },
+  { 
+    q: "Daniel is a very punctual person. He always arrives at the studio ______ for his band practice, so he gets annoyed when other members are late.", 
+    ans: "on time", 
+    dummy: ["in a minute", "at least", "these days"], 
+    note: "punctual = 時間に厳しい / 几帳面な" 
+  },
+  { 
+    q: "Waiter: “How would you like your steak?”<br>Mr. Sterling: “______! You know how I like my steak! Medium-rare! I love the tender texture!”", 
+    ans: "As usual", 
+    dummy: ["for example", "in a hurry", "the other day"], 
+    note: "medium-rare = ミディアムレア / tender = 柔らかい / texture = 質感・食感 " 
+  },
+  { 
+    q: "Mr. Noble is in Singapore ______ right now. He is planning a new business project with his partners.", 
+    ans: "on business", 
+    dummy: ["on foot", "on sale", "this way"], 
+    note: "" 
+  },
+  { 
+    q: "“Lunch will be ready ______,” Timothy's mother said. He quickly came downstairs and sat at the table.", 
+    ans: "in a minute", 
+    dummy: ["for a long time", "by the way", "as usual"], 
+    note: "" 
+  },
+  { 
+    q: "Erin: I love your leather jacket, Anne! It looks expensive.<br>Anne: It's cool, right? I bought it ______ for only $50. Can you believe it?", 
+    ans: "on sale", 
+    dummy: ["on business", "on time", "in a hurry"], 
+    note: "" 
+  },
+  { 
+    q: "An old man looked at the kids playing games on their smartphones in the park. “Kids ______ are too obsessed with digital devices! They should move their bodies more outside!”", 
+    ans: "these days", 
+    dummy: ["the other day", "for a while", "this way"], 
+    note: "be obsessed with = 〜に夢中になっている" 
+  },
+  { 
+    q: "To stay healthy, it is said that a person should drink ______ two liters of water every day.", 
+    ans: "at least", 
+    dummy: ["on sale", "in fact", "for example"], 
+    note: "" 
+  },
+  { 
+    q: "Brian tried to run with Rebecca, a marathon champion. He could keep up with her ______. However, he soon got tired and started walking.", 
+    ans: "for a while", 
+    dummy: ["as usual", "on time", "the other day"], 
+    note: "" 
+  }
+];
+
+let quizData = [...quizDataRaw].sort(() => Math.random() - 0.5);
+let currentIdx = 0;
+let canClick = true;
+
+function formatAnswer(text, questionPart) {
+  if (questionPart.trim().endsWith(".") || questionPart.trim().endsWith("!") || questionPart.trim() === "" || questionPart.includes("______")) {
+     return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+  return text;
+}
+
+function renderQuestion() {
+  const item = quizData[currentIdx];
+  document.getElementById('current-idx').innerText = currentIdx + 1;
+  
+  const partBefore = item.q.split('______')[0];
+  const displayQ = (currentIdx + 1) + ". " + item.q.replace('______', `<span class="blank-space" id="blank-target">______</span>`);
+  document.getElementById('q-text').innerHTML = displayQ;
+  document.getElementById('q-hint').innerText = item.note ? `Hint: ${item.note}` : "";
+  
+  const options = [...item.dummy, item.ans].sort(() => Math.random() - 0.5);
+  const optionsDiv = document.getElementById('q-options');
+  optionsDiv.innerHTML = '';
+  
+  canClick = true;
+  document.getElementById('feedback').innerText = '';
+  document.getElementById('next-btn').style.display = 'none';
+
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerText = formatAnswer(opt, partBefore);
+    btn.onclick = () => checkAnswer(btn, opt, item.ans, partBefore);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(btn, selected, correct, partBefore) {
+  if (!canClick || btn.classList.contains('selected-wrong')) return;
+  if (selected === correct) {
+    canClick = false;
+    btn.classList.add('selected-correct');
+    document.getElementById('blank-target').innerText = formatAnswer(selected, partBefore);
+    document.getElementById('feedback').innerHTML = '<span style="color:var(--success)">Correct! ✨</span>';
+    document.getElementById('next-btn').style.display = 'block';
+  } else {
+    btn.classList.add('selected-wrong');
+    document.getElementById('feedback').innerHTML = '<span style="color:var(--error)">Wrong... Try again! ✍️</span>';
+  }
+}
+
+function nextQuestion() {
+  currentIdx++;
+  if (currentIdx < quizData.length) {
+    renderQuestion();
+  } else {
+    document.querySelector('.quiz-area').innerHTML = "<h2 style='text-align:center; color:var(--primary); margin-top:50px;'>Excellent!<br>You finished Day 40!</h2>";
+    document.getElementById('feedback').innerText = "";
+    document.getElementById('next-btn').style.display = 'none';
+  }
+}
+
+function renderPrintList() {
+  const list1 = document.getElementById('print-list-1');
+  const list2 = document.getElementById('print-list-2');
+  const notesDiv = document.getElementById('print-notes');
+  const uniqueNotes = new Set();
+  
+  quizData.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'print-question';
+    
+    const partBefore = item.q.split('______')[0];
+    const choices = [item.ans, ...item.dummy].sort(() => Math.random() - 0.5)
+      .map(opt => formatAnswer(opt, partBefore))
+      .join('  /  ');
+      
+    const displayQ = item.q.replace('______', `<span class="print-blank"></span>`);
+    qDiv.innerHTML = `${i + 1}. ${displayQ}<div class="print-options-list">[ ${choices} ]</div>`;
+    
+    if (i < 8) list1.appendChild(qDiv);
+    else list2.appendChild(qDiv);
+
+    if (item.note) {
+      const cleanNote = item.note.replace(/Hint:\s*/g, "");
+      cleanNote.split(' / ').forEach(n => {
+        if (n && n.includes(' = ')) uniqueNotes.add(n.trim());
+      });
+    }
+  });
+
+  Array.from(uniqueNotes).sort().forEach(n => {
+    const parts = n.split(' = ');
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'notes-item';
+    itemDiv.innerHTML = `<b>${parts[0].trim()}</b> = ${parts[1].trim()}`;
+    notesDiv.appendChild(itemDiv);
+  });
+}
+
+renderQuestion();
+renderPrintList();
+</script>
+</body>
+</html>

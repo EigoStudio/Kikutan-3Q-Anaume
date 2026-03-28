@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 41 Common Phrases Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --primary: #4a90e2; --bg: #f0f4f8; --white: #ffffff; --success: #34c759; --error: #d0021b; --selected: #ffcc00; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .browser-view { width: 90%; max-width: 800px; margin: 40px auto; background: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .header { border-bottom: 2px solid var(--primary); margin-bottom: 20px; display: flex; justify-content: flex-end; align-items: center; }
+    .header h1 { font-size: 22px; color: var(--primary); margin: 0; }
+    
+    .question-text { font-size: 19px; line-height: 1.7; margin-bottom: 20px; color: #333; min-height: 4em; }
+    .blank-space { color: var(--error); font-weight: bold; border-bottom: 2px solid #333; padding: 0 10px; display: inline-block; min-width: 180px; text-align: center; }
+    
+    .hint-box { font-size: 14px; color: #555; font-style: italic; margin-bottom: 20px; background: #f1f5f9; padding: 8px 12px; border-radius: 4px; display: inline-block; border-left: 3px solid #cbd5e1; }
+    .hint-box:empty { display: none; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .option-btn { padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: white; cursor: pointer; font-size: 16px; transition: all 0.2s; text-align: left; }
+    .option-btn:hover:not(:disabled) { border-color: var(--primary); background: #f0f7ff; }
+    .option-btn.selected-wrong { background: #fee2e2; border-color: var(--error); color: var(--error); cursor: not-allowed; }
+    .option-btn.selected-correct { background: var(--success); color: white; border-color: var(--success); }
+
+    .controls { margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    #feedback { font-weight: bold; font-size: 18px; height: 1.5em; }
+    #next-btn { padding: 12px 40px; border: none; border-radius: 6px; background: var(--primary); color: white; font-weight: bold; cursor: pointer; display: none; }
+    .progress { font-size: 14px; color: #666; margin-right: auto; }
+
+    .nav-btns-fixed { position: fixed; top: 15px; left: 15px; z-index: 100; display: flex; flex-direction: column; gap: 10px; }
+    .fixed-btn { padding: 10px 15px; border: none; border-radius: 6px; background: #333; color: white; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    #print-content { display: none; }
+
+    @media print {
+      body { background: white; }
+      .browser-view, .nav-btns-fixed { display: none !important; }
+      #print-content { display: block !important; padding: 5mm; }
+      .print-page { page-break-after: always; color: #000; }
+      .print-header { border-bottom: 1.5px solid #000; margin-bottom: 4mm; display: flex; justify-content: flex-end; }
+      .print-header h1 { font-size: 17px; margin: 0; }
+      .instruction { font-size: 12.5px; font-weight: bold; margin-bottom: 5mm; border-left: 3px solid #000; padding-left: 10px; }
+      .print-question { font-size: 15px; line-height: 1.8; margin-bottom: 5mm; }
+      .print-blank { display: inline-block; width: 220px; border-bottom: 1px solid #000; margin: 0 5px; vertical-align: bottom; }
+      .print-options-list { font-size: 12px; margin-top: 3px; font-style: italic; font-weight: bold; color: #444; }
+      .notes-container { border-top: 1.2px solid #000; margin-top: 5mm; padding-top: 3mm; font-size: 11px; display: flex; flex-wrap: wrap; gap: 2px 15px; }
+      .notes-item b { color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="nav-btns-fixed">
+  <button class="fixed-btn" onclick="window.print()">PDF保存 / 印刷</button>
+  <button class="fixed-btn" onclick="location.reload()" style="background:#ff9500;">最初から解く</button>
+</div>
+
+<div class="browser-view">
+  <div class="header">
+    <div class="progress">Question <span id="current-idx">1</span> / 16</div>
+    <h1>3級 Day 41 Common Phrases</h1>
+  </div>
+  
+  <div class="quiz-area">
+    <div class="question-text" id="q-text"></div>
+    <div class="hint-box" id="q-hint"></div>
+    <div class="options-grid" id="q-options"></div>
+  </div>
+
+  <div class="controls">
+    <div id="feedback"></div>
+    <button id="next-btn" onclick="nextQuestion()">Next Question →</button>
+  </div>
+</div>
+
+<div id="print-content">
+  <div class="print-page">
+    <div class="print-header"><h1>3級 Day 41 Common Phrases</h1></div>
+    <div class="instruction">★ Complete the sentences using the best phrase from the choices.</div>
+    <div id="print-list-1"></div>
+  </div>
+  <div class="print-page">
+    <div style="margin-top: 10mm;" id="print-list-2"></div>
+    <div id="print-notes" class="notes-container"></div>
+  </div>
+</div>
+
+<script>
+const quizDataRaw = [
+  { 
+    q: "Daniel is a very talented drummer, and his skills are like a professional's. However, he only plays in his band ______ .", 
+    ans: "for fun", 
+    dummy: ["for now", "for free", "a day"], 
+    note: "talented = 才能のある" 
+  },
+  { 
+    q: "Waiter: “Would you like to order anything else?”<br>Mr. Sterling: “I ate a thick steak and three desserts. I'm full, so I can eat ______!”", 
+    ans: "no more", 
+    dummy: ["than usual", "for fun", "in trouble"], 
+    note: "" 
+  },
+  { 
+    q: "The doctor told Mr. Sterling to take his medicine three times ______, after every meal, to stay healthy.", 
+    ans: "a day", 
+    dummy: ["for free", "all the way", "for now"], 
+    note: "medicine = 薬 / every meal = 毎食" 
+  },
+  { 
+    q: "Brian was jogging with Rebecca, but he couldn't keep up and started walking. ______, he felt better and began running again.", 
+    ans: "After a while", 
+    dummy: ["First of all", "Right away", "One day"], 
+    note: "" 
+  },
+  { 
+    q: "Toby: “What?! You walked ______ from home? It takes an hour and a half!”<br>Kelly: “Yes. I don't like taking a crowded bus.”", 
+    ans: "all the way", 
+    dummy: ["all night long", "than usual", "for a minute"], 
+    note: "" 
+  },
+  { 
+    q: "“______, I want to thank everyone for coming to my party,” Gilbert said before he started the celebration.", 
+    ans: "First of all", 
+    dummy: ["After a while", "One day", "For now"], 
+    note: "thank = 感謝する / celebration = お祝い" 
+  },
+  { 
+    q: "Anne loves animals and writing stories about them. She hopes to visit Africa ______ to see wild lions.", 
+    ans: "one day", 
+    dummy: ["right away", "in time", "for now"], 
+    note: "" 
+  },
+  { 
+    q: "Timothy is getting taller, and his clothes are becoming too small. They are okay ______, but he will need new ones soon.", 
+    ans: "for now", 
+    dummy: ["for free", "for fun", "no more"], 
+    note: "" 
+  },
+  { 
+    q: "Mother: “Do you want to stay in the soccer club, or join the science club?”<br>Timothy: “I don't know.”<br>Mother: “It's your life, Timothy. You should decide ______!”", 
+    ans: "for yourself", 
+    dummy: ["for free", "for fun", "in trouble"], 
+    note: "" 
+  },
+  { 
+    q: "Masako woke up late this morning, but she ran to school and arrived just ______ for her first class.", 
+    ans: "in time", 
+    dummy: ["on foot", "all night long", "one day"], 
+    note: "" 
+  },
+  { 
+    q: "Mr. Sterling: “Can I have another coke?”<br>Waiter: “Certainly! I'll bring it ______!”", 
+    ans: "right away", 
+    dummy: ["after a while", "one day", "for a minute"], 
+    note: "certainly = かしこまりました" 
+  },
+  { 
+    q: "Mr. Noble felt a bit sick during the meeting. “Please excuse me ______,” he said, and went to the restroom.", 
+    ans: "for a minute", 
+    dummy: ["all the way", "than usual", "no more"], 
+    note: "" 
+  },
+  { 
+    q: "While playing with his puppy, Timothy broke his mother's favorite vase. “I'm ______! Mom will be very angry,” he thought.", 
+    ans: "in trouble", 
+    dummy: ["in time", "for fun", "no more"], 
+    note: "vase = 花瓶" 
+  },
+  { 
+    q: "Erica feels even more tired ______ after her long work as a lawyer. Drinking chamomile tea didn't help, so she started doing yoga.", 
+    ans: "than usual", 
+    dummy: ["all the way", "first of all", "for a minute"], 
+    note: "lawyer = 弁護士" 
+  },
+  { 
+    q: "Bruce was late for school today because he stayed up last night. He was painting a picture of ghosts ______.", 
+    ans: "all night long", 
+    dummy: ["after a while", "in time", "one day"], 
+    note: "" 
+  },
+  { 
+    q: "In Japan, water is usually provided ______ in many restaurants. Some foreign tourists are surprised by this service.", 
+    ans: "for free", 
+    dummy: ["for now", "for fun", "no more"], 
+    note: "provide = 提供する" 
+  }
+];
+
+let quizData = [...quizDataRaw].sort(() => Math.random() - 0.5);
+let currentIdx = 0;
+let canClick = true;
+
+function formatAnswer(text, questionPart) {
+  const trimmed = questionPart.trim();
+  if (trimmed === "" || trimmed.endsWith(".") || trimmed.endsWith("!") || trimmed.endsWith("?") || trimmed.endsWith(">")) {
+     return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+  return text;
+}
+
+function renderQuestion() {
+  const item = quizData[currentIdx];
+  const progressSpan = document.getElementById('current-idx');
+  if (progressSpan) progressSpan.innerText = currentIdx + 1;
+  
+  const qTextDiv = document.getElementById('q-text');
+  const partBefore = item.q.split('______')[0];
+  qTextDiv.innerHTML = (currentIdx + 1) + ". " + item.q.replace('______', `<span class="blank-space" id="blank-target">______</span>`);
+  
+  const qHintDiv = document.getElementById('q-hint');
+  qHintDiv.innerText = item.note ? `Hint: ${item.note}` : "";
+  
+  const options = [...item.dummy, item.ans].sort(() => Math.random() - 0.5);
+  const optionsDiv = document.getElementById('q-options');
+  optionsDiv.innerHTML = '';
+  
+  canClick = true;
+  document.getElementById('feedback').innerText = '';
+  document.getElementById('next-btn').style.display = 'none';
+
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerText = formatAnswer(opt, partBefore);
+    btn.onclick = () => checkAnswer(btn, opt, item.ans, partBefore);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function checkAnswer(btn, selected, correct, partBefore) {
+  if (!canClick || btn.classList.contains('selected-wrong')) return;
+  if (selected === correct) {
+    canClick = false;
+    btn.classList.add('selected-correct');
+    document.getElementById('blank-target').innerText = formatAnswer(selected, partBefore);
+    document.getElementById('feedback').innerHTML = '<span style="color:var(--success)">Correct! ✨</span>';
+    document.getElementById('next-btn').style.display = 'block';
+  } else {
+    btn.classList.add('selected-wrong');
+    document.getElementById('feedback').innerHTML = '<span style="color:var(--error)">Wrong... Try again! ✍️</span>';
+  }
+}
+
+function nextQuestion() {
+  currentIdx++;
+  if (currentIdx < quizData.length) {
+    renderQuestion();
+  } else {
+    document.querySelector('.quiz-area').innerHTML = "<h2 style='text-align:center; color:var(--primary); margin-top:50px;'>Excellent!<br>You finished Day 41!</h2>";
+    document.getElementById('feedback').innerText = "";
+    document.getElementById('next-btn').style.display = 'none';
+  }
+}
+
+function renderPrintList() {
+  const list1 = document.getElementById('print-list-1');
+  const list2 = document.getElementById('print-list-2');
+  const notesDiv = document.getElementById('print-notes');
+  const uniqueNotes = new Set();
+  
+  quizData.forEach((item, i) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'print-question';
+    
+    const partBefore = item.q.split('______')[0];
+    const choices = [item.ans, ...item.dummy].sort(() => Math.random() - 0.5)
+      .map(opt => formatAnswer(opt, partBefore))
+      .join('  /  ');
+      
+    const displayQ = item.q.replace('______', `<span class="print-blank"></span>`);
+    qDiv.innerHTML = `${i + 1}. ${displayQ}<div class="print-options-list">[ ${choices} ]</div>`;
+    
+    if (i < 8) list1.appendChild(qDiv);
+    else list2.appendChild(qDiv);
+
+    if (item.note) {
+      item.note.split(' / ').forEach(n => {
+        if (n && n.includes(' = ')) uniqueNotes.add(n.trim());
+      });
+    }
+  });
+
+  Array.from(uniqueNotes).sort().forEach(n => {
+    const parts = n.split(' = ');
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'notes-item';
+    itemDiv.innerHTML = `<b>${parts[0].trim()}</b> = ${parts[1].trim()}`;
+    notesDiv.appendChild(itemDiv);
+  });
+}
+
+window.onload = () => {
+  renderQuestion();
+  renderPrintList();
+};
+</script>
+</body>
+</html>
