@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 43 Common Phrases Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】カラーデザイン（Day 33準拠）
+       ========================================= */
+    :root { --primary: #4a90e2; --secondary: #d81b60; --accent: #d0021b; --bg: #f0f4f8; --success: #34c759; --selected: #ffcc00; --target: #dcfce7; }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; display: flex; flex-direction: column; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+    .header { display: flex; justify-content: flex-end; border-bottom: 2px solid var(--primary); margin-bottom: 15px; }
+    .header h1 { font-size: 18px; color: var(--primary); font-weight: 700; margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #444; margin: 10px 0 20px 0; padding-left: 10px; border-left: 4px solid var(--primary); }
+    
+    #exercise-content { display: flex; flex-direction: column; gap: 30px; }
+    .question-block { display: flex; flex-direction: column; gap: 10px; }
+    
+    .bank-container { display: flex; gap: 12px; flex-wrap: wrap; }
+    /* ワードバンクA (Main Verb) */
+    .word-bank { 
+      font-weight: bold; font-size: 14px; color: var(--primary); 
+      background: #eef6ff; border: 1px solid var(--primary); 
+      padding: 6px 12px; border-radius: 4px; 
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+    /* ワードバンクB (Gerund/Infinitive) */
+    .word-bank-secondary { 
+      font-weight: bold; font-size: 14px; color: var(--secondary); 
+      background: #fce4ec; border: 1px solid var(--secondary); 
+      padding: 6px 12px; border-radius: 4px;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    }
+
+    .draggable-word {
+      cursor: pointer; padding: 2px 6px; border-radius: 4px;
+      transition: all 0.2s; border: 1px solid transparent;
+      user-select: none; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    .draggable-word:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
+    .draggable-word.selected { border: 2px solid #ffcc00; background: #fffbe6; transform: scale(1.05); }
+    .draggable-word.used { opacity: 0.3; text-decoration: line-through; pointer-events: none; background: #eee; box-shadow: none; }
+
+    .sentence-list { display: flex; flex-direction: column; gap: 12px; }
+    .sentence { font-size: 15.5px; line-height: 1.5; color: #333; }
+    
+    .blank { 
+      display: inline-block; min-width: 80px; border-bottom: 1.5px solid #333; 
+      text-align: center; font-weight: bold; color: var(--accent); 
+      margin: 0 4px; padding: 2px 4px; cursor: pointer; transition: background 0.2s;
+      vertical-align: bottom; height: 1.4em;
+    }
+    
+    body.is-selecting .blank { background: var(--target); border-bottom: 2px dashed var(--success); animation: pulse 1.5s infinite; }
+    body.is-selecting .blank.filled { background: #fff3cd; border-bottom: 1.5px solid #ffcc00; animation: none; opacity: 1; }
+    
+    .blank.filled[data-type="B"] { cursor: context-menu; color: var(--secondary); }
+    .blank.filled[data-type="A"] { color: var(--primary); }
+
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
+
+    .notes-container { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #555; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+    .notes-item b { color: var(--primary); }
+
+    .controls { position: fixed; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    button { padding: 8px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--primary); color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+
+    /* =========================================
+       【PDF印刷用】完全白黒・A4二枚
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 12mm 15mm 15mm 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      body.is-selecting .blank { background: none !important; border-bottom: 1.5px solid #000 !important; animation: none !important; }
+      
+      .browser-only { display: none !important; }
+
+      .controls { display: none !important; }
+      .container { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; display: block !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border-left: 3px solid #000 !important; font-size: 12.5px !important; color: #000 !important; margin-bottom: 8mm !important; }
+      #exercise-content { gap: 6mm !important; }
+      .question-block { page-break-inside: avoid; break-inside: avoid; margin-bottom: 2mm !important; }
+      .bank-container { margin-bottom: 3mm !important; }
+      
+      .word-bank, .word-bank-secondary { 
+        background: none !important; border: 1.5px solid #000 !important; 
+        color: #000 !important; font-size: 16px !important; 
+        padding: 2px 8px !important; display: block !important;
+      }
+      .draggable-word {
+        display: inline !important; border: none !important; background: none !important; box-shadow: none !important;
+        padding: 0 !important; color: inherit !important; cursor: default !important; opacity: 1 !important; text-decoration: none !important; pointer-events: none !important;
+      }
+      .draggable-word::after { content: " / "; }
+      .draggable-word:last-child::after { content: ""; }
+
+      .sentence { font-size: 17.5px !important; line-height: 1.6 !important; color: #000 !important; margin-bottom: 1mm !important; }
+      .blank { color: #000 !important; border-color: #000 !important; min-width: 90px !important; background: none !important; }
+      .notes-container { margin-top: 10mm !important; border-top: 1.2px solid #000 !important; font-size: 13.5px !important; color: #000 !important; line-height: 1.4 !important; page-break-inside: avoid; gap: 2px 20px !important; }
+      .notes-item b { color: #000 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="generate()">問題をシャッフル</button>
+    <button onclick="checkAnswers()" style="background: #ff9500;">答え合わせ</button>
+    <button onclick="window.print()" style="background: var(--success);">PDF保存 / 印刷</button>
+  </div>
+  <div class="container">
+    <div class="header"><h1>3級 Day 43 Common Phrases</h1></div>
+    <div class="instruction">
+      ★ Fill in the blanks with the correct words. 
+      <span class="browser-only"><br>(Tap a word in the bank, then tap the blank to fill it.)</span>
+    </div>
+    <div id="exercise-content"></div>
+    <div id="notes-area" class="notes-container"></div>
+  </div>
+
+  <script>
+    const masterData = [
+      { ans: ["the", "as"], text: "Mr. Sterling has [B] same health problems [B] his father. They both eat too much sugar, and that is bad for their health." },
+      { ans: ["either", "or"], text: "Erin told Matt, 'You can [B] follow a healthy diet and have clear skin [B] continue to eat junk food and have pimples!'" },
+      { ans: ["such", "as"], text: "Mr. Sterling's doctor advised him to eat healthy food [B] [B] fresh vegetables and fruit to improve his health." },
+      { ans: ["between", "and"], text: "There are five coffee shops [B] Erin's home [B] her work, but she always goes to the same one because she likes the handsome barista there." },
+      { ans: ["from", "to"], text: "Daniel walks [B] the station [B] the stadium construction site every day." },
+      { ans: ["both", "and"], text: "Miki grew up in France and Japan, so she can speak [B] French [B] Japanese fluently." },
+      { ans: ["a", "few"], text: "Bruce told his mother [B] [B] jokes. They were so funny that she couldn't stop laughing." },
+      { ans: ["most", "of"], text: "[B] [B] the students in George's class don't like math. Only George and few others like the subject." },
+      { ans: ["as", "as"], text: "George is good at math [B] well [B] science. He always gets good grades in both of these subjects." },
+      { ans: ["thousands", "of"], text: "Toby is a very popular violinist around the world. He has [B] [B] fans who watch his videos online." },
+      { ans: ["slice", "of"], text: "Gilbert asked Ellie for another [B] [B] her famous strawberry cake. 'This time, make it thick, please!' he said." },
+      { ans: ["glass", "of"], text: "Mr. Sterling worked out at home. Now he is drinking a [B] [B] cold water to quench his thirst." },
+      { ans: ["lot", "of"], text: "Kelly is a scientist. She spends a [B] [B] time in the forest to study nature." },
+      { ans: ["pair", "of"], text: "Masako went to the mall and found a perfect [B] [B] boots for the winter festival in Sapporo." },
+      { ans: ["both", "of"], text: "Brian tried to ride a unicycle to show off his motor skills to Rebecca, but he fell off and hurt [B] [B] his knees." },
+      { ans: ["only", "also"], text: "Veronica is not [B] smart but [B] athletic. She is the fastest swimmer in her class and knows every US president." }
+    ];
+
+    const wordNotes = [
+      "quench one's thirst = のどの渇きをいやす", 
+      "barista = バリスタ", 
+      "thick = 厚い", 
+      "athletic = 運動神経が良い", 
+      "pimple = ニキビ", 
+      "unicycle = 一輪車", 
+      "construction site = 建設現場"
+    ];
+
+    let selectedElement = null;
+
+    function generate() {
+      const content = document.getElementById('exercise-content');
+      content.innerHTML = '';
+      let shuffled = [...masterData].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < 4; i++) {
+        const block = document.createElement('div');
+        block.className = 'question-block';
+        const currentFour = shuffled.slice(i * 4, (i + 1) * 4);
+
+        const bankAItems = currentFour.map(item => item.ans[0]).sort(() => Math.random() - 0.5);
+        const bankBItems = currentFour.map(item => item.ans[1]).sort(() => Math.random() - 0.5);
+
+        const bankContainer = document.createElement('div');
+        bankContainer.className = 'bank-container';
+
+        const divA = document.createElement('div');
+        divA.className = 'word-bank';
+        divA.innerHTML = `<span>${i+1}-A) </span>`;
+        bankAItems.forEach(txt => divA.appendChild(createDraggable(txt, 'A')));
+
+        const divB = document.createElement('div');
+        divB.className = 'word-bank-secondary';
+        divB.innerHTML = `<span>${i+1}-B) </span>`;
+        bankBItems.forEach(txt => divB.appendChild(createDraggable(txt, 'B')));
+
+        bankContainer.appendChild(divA);
+        bankContainer.appendChild(divB);
+        block.appendChild(bankContainer);
+
+        const list = document.createElement('div');
+        list.className = 'sentence-list';
+        currentFour.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'sentence';
+          
+          let htmlText = item.text;
+          div.innerHTML = htmlText.split('[B]').join("<span class='blank'></span>");
+          
+          const blanks = div.querySelectorAll('.blank');
+          blanks[0].dataset.type = 'A'; blanks[0].dataset.ans = item.ans[0];
+          blanks[1].dataset.type = 'B'; blanks[1].dataset.ans = item.ans[1];
+          
+          // 文頭フラグ（Georgeの文用）
+          if (htmlText.startsWith('[B]')) blanks[0].dataset.isStart = "true";
+
+          div.querySelectorAll('.blank').forEach(blank => {
+            blank.onclick = () => {
+              if (selectedElement && selectedElement.dataset.type === blank.dataset.type) {
+                if (blank.dataset.sourceId) document.getElementById(blank.dataset.sourceId).classList.remove('used');
+                
+                let val = selectedElement.textContent;
+                if (blank.dataset.isStart === "true" && val === "most") val = "Most";
+                
+                blank.textContent = val;
+                blank.dataset.sourceId = selectedElement.id;
+                blank.classList.add('filled');
+                selectedElement.classList.add('used');
+                clearSelection();
+              } else if (blank.classList.contains('filled')) {
+                const src = document.getElementById(blank.dataset.sourceId);
+                if(src) src.classList.remove('used');
+                blank.textContent = '';
+                blank.classList.remove('filled');
+              }
+            };
+          });
+          list.appendChild(div);
+        });
+        block.appendChild(list);
+        content.appendChild(block);
+      }
+
+      const nArea = document.getElementById('notes-area');
+      nArea.innerHTML = '';
+      wordNotes.sort().forEach(n => {
+        const item = document.createElement('div');
+        item.className = 'notes-item';
+        const p = n.split(' = ');
+        item.innerHTML = `<b>${p[0]}</b> = ${p[1]}`;
+        nArea.appendChild(item);
+      });
+    }
+
+    function createDraggable(text, type) {
+      const span = document.createElement('span');
+      span.id = 'w-' + Math.random().toString(36).substr(2, 9);
+      span.className = 'draggable-word';
+      span.textContent = text;
+      span.dataset.type = type;
+      span.onclick = () => {
+        if (span.classList.contains('used')) return;
+        clearSelection();
+        span.classList.add('selected');
+        selectedElement = span;
+        document.body.classList.add('is-selecting');
+      };
+      return span;
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.draggable-word').forEach(el => el.classList.remove('selected'));
+      document.body.classList.remove('is-selecting');
+      selectedElement = null;
+    }
+
+    function checkAnswers() {
+      document.querySelectorAll('.blank').forEach(b => {
+        if (b.textContent.trim().toLowerCase() === b.dataset.ans.toLowerCase()) {
+            b.style.color = "var(--success)";
+        } else {
+            b.style.color = "var(--accent)";
+        }
+      });
+    }
+    window.onload = generate;
+  </script>
+</body>
+</html>
