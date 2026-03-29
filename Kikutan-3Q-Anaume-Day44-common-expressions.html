@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 44 Common Expressions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】デザイン
+       ========================================= */
+    :root { 
+      --primary: #2c3e50; 
+      --accent: #1a5276; 
+      --bg: #f4f7f6; 
+      --char-bg: #ffffff; 
+    }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; border-radius: 8px; }
+    .header { 
+  border-bottom: 2px solid var(--primary); 
+  margin-bottom: 20px; 
+  padding-bottom: 10px; 
+  /* --- ここを追加 --- */
+  display: flex;
+  justify-content: flex-end;
+}
+    .header h1 { font-size: 20px; color: var(--primary); margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 25px; padding: 10px; background: #fdfdfd; border-left: 4px solid var(--accent); }
+    
+    .script-scene { margin-bottom: 40px; padding: 15px; border: 1px solid #eee; border-radius: 8px; }
+    .scene-title { font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px; font-style: italic; }
+    .narration { font-size: 14px; color: #666; font-style: italic; margin-bottom: 15px; padding: 5px 10px; border-left: 2px solid #ccc; background: #fafafa; }
+    
+    .line { display: flex; gap: 15px; margin-bottom: 12px; align-items: flex-start; }
+    .speaker { width: 85px; font-weight: 800; color: var(--accent); text-align: right; flex-shrink: 0; padding-top: 5px; }
+    .speech { background: var(--char-bg); padding: 10px 18px; border: 1px solid #e0e0e0; border-radius: 0 15px 15px 15px; flex-grow: 1; font-size: 15.5px; line-height: 1.5; color: #2c3e50; }
+    
+    .speech b { color: var(--accent); font-weight: 800; text-decoration: underline; }
+    
+    .audio-btn { 
+      cursor: pointer; background: #f8f9fa; border: 1px solid #ddd; border-radius: 50%; width: 28px; height: 28px; 
+      display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; flex-shrink: 0;
+    }
+    .audio-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    /* =========================================
+       【PDF印刷用】完全黒字・Day 33/43 スタイル
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 15mm; }
+      body { background: white; -webkit-print-color-adjust: exact; }
+      .container { width: 100% !important; margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
+      .controls, .audio-btn { display: none !important; }
+      .header { 
+    border-bottom: 1.5px solid #000; 
+    margin-bottom: 6mm; 
+    /* --- ここを追加 --- */
+    display: flex;
+    justify-content: flex-end;
+  }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border: 1px solid #000 !important; border-left: 4px solid #000 !important; color: #000 !important; font-size: 12.5px !important; margin-bottom: 8mm !important; }
+      
+      .script-scene { page-break-inside: avoid; border: none; padding: 0; margin-bottom: 30px; }
+      .scene-title { color: #000; border-bottom: 1px solid #000; font-size: 14px !important; margin-bottom: 10px; }
+      .narration { background: none !important; border-left: 2px solid #000 !important; color: #000 !important; font-size: 14.5px !important; }
+      
+      .speaker { color: #000 !important; width: 75px; }
+      .speech { background: none !important; border: none !important; border-left: 2.5px solid #000 !important; border-radius: 0; padding: 0 15px; font-size: 17px !important; color: #000 !important; }
+      .speech b { color: #000 !important; text-decoration: none; border-bottom: 1.5px solid #000; }
+    }
+    
+    .controls { position: fixed; top: 15px; left: 15px; z-index: 100; }
+    button { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--accent); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="window.print()">PDF保存 / 印刷</button>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>3級 Day 44 Common Expressions</h1>
+    </div>
+    
+    <div class="instruction">
+      ★ Read the dialogue and check the <b>bold</b> phrases. 
+      <span class="browser-only"><br>(Tap the ▶ button to listen to the dialogue.)</span>
+    </div>
+
+    <div id="script-content">
+      <div class="script-scene">
+        <div class="scene-title">Scene 1: Before the Big Tennis Match</div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('I am so nervous. What if I lose?')">▶</div>
+          <div class="speech">I am so nervous. What if I lose?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Erin</div>
+          <div class="audio-btn" onclick="speak('Don\'t worry! I\'m sure you\'ll do great.')">▶</div>
+          <div class="speech">Don't worry! <b>I'm sure</b> you'll do great.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('I hope so... but my heart is beating so fast.')">▶</div>
+          <div class="speech"><b>I hope</b> so... but my heart is beating so fast.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Erin</div>
+          <div class="audio-btn" onclick="speak('You practice for three hours every single day. Believe in yourself! Listen, Shelly. Why don\'t you take a deep breath and close your eyes for a moment?')">▶</div>
+          <div class="speech">You practice for three hours every single day. Believe in yourself! Listen, Shelly. <b>Why don't you</b> take a deep breath and close your eyes for a moment?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('Okay, I feel much better now. Thank you so much, Erin.')">▶</div>
+          <div class="speech">Okay, I feel much better now. Thank you so much, Erin.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Erin</div>
+          <div class="audio-btn" onclick="speak('I\'m glad to hear that. Now, go out there and show them what you got!')">▶</div>
+          <div class="speech"><b>I'm glad to</b> hear that. Now, go out there and show them what you got!</div>
+        </div>
+      </div>
+
+      <div class="script-scene">
+        <div class="scene-title">Scene 2: After the Match</div>
+        <div class="line">
+          <div class="speaker">Bruce</div>
+          <div class="audio-btn" onclick="speak('How was your match, Shelly?')">▶</div>
+          <div class="speech"><b>How was</b> your match, Shelly?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('I won! It was a hard game, but I did it.')">▶</div>
+          <div class="speech">I won! It was a hard game, but I did it.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Bruce</div>
+          <div class="audio-btn" onclick="speak('That\'s amazing! Why don\'t we celebrate your victory at Meat Eaters?')">▶</div>
+          <div class="speech">That's amazing! <b>Why don't we</b> celebrate your victory at Meat Eaters? </div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('I\'m afraid I can\'t. I have a special dinner with my parents tonight.')">▶</div>
+          <div class="speech"><b>I'm afraid</b> I can't. I have a special dinner with my parents tonight. </div>
+        </div>
+        <div class="line">
+          <div class="speaker">Bruce</div>
+          <div class="audio-btn" onclick="speak('I see! Your parents must be very proud. Please say hello to them!')">▶</div>
+          <div class="speech">I see! Your parents must be very proud. <b>Please say hello to</b> them!</div>
+        </div>
+      </div>
+
+      <div class="script-scene">
+        <div class="scene-title">Scene 3: Shopping and Snack Time</div>
+        <div class="line">
+          <div class="speaker">George</div>
+          <div class="audio-btn" onclick="speak('Anne, would you like to go shopping with me? I need to find a gift for my brother.')">▶</div>
+          <div class="speech">Anne, <b>would you like to</b> go shopping with me? I need to find a gift for my brother.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Anne</div>
+          <div class="audio-btn" onclick="speak('Sure! I\'d love to.')">▶</div>
+          <div class="speech">Sure! I'd love to.</div>
+        </div>
+
+        <div class="narration"><b>It took</b> them three hours <b>to</b> choose a present. George got Timothy a kaleidoscope. </div>
+
+        <div class="line">
+          <div class="speaker">George</div>
+          <div class="audio-btn" onclick="speak('Now, let\'s go get what you want!')">▶</div>
+          <div class="speech">Now, let's go get what you want!</div>
+        </div>
+
+        <div class="narration">They enter a clothing store. Anne looks for some clothes. </div>
+
+        <div class="line">
+          <div class="speaker">Anne</div>
+          <div class="audio-btn" onclick="speak('What do you think of this skirt?')">▶</div>
+          <div class="speech"><b>What do you think of</b> this skirt?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">George</div>
+          <div class="audio-btn" onclick="speak('It is too short! How about this long flare skirt? It is very beautiful.')">▶</div>
+          <div class="speech"><b>It is</b> too short! <b>How about</b> this long flare skirt? It's very beautiful. </div>
+        </div>
+        <div class="line">
+          <div class="speaker">Anne</div>
+          <div class="audio-btn" onclick="speak('You have a good taste! I will buy it.')">▶</div>
+          <div class="speech">You have a good taste! I'll buy it.</div>
+        </div>
+
+        <div class="narration">Anne pays for the skirt at the checkout counter.</div>
+
+        <div class="line">
+          <div class="speaker">Anne</div>
+          <div class="audio-btn" onclick="speak('Oh, it is time for an afternoon snack.')">▶</div>
+          <div class="speech">Oh, <b>it's time for</b> an afternoon snack.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">George</div>
+          <div class="audio-btn" onclick="speak('Would you like an ice cream at the cafe over there?')">▶</div>
+          <div class="speech"><b>Would you like</b> an ice cream at the cafe over there?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Anne</div>
+          <div class="audio-btn" onclick="speak('Sounds great! Let\'s go!')">▶</div>
+          <div class="speech">Sounds great! Let's go!</div>
+        </div>
+
+        <div class="narration">At the cafe, George is eating a sandwich, and Anne is eating a pancake with strawberry ice cream.</div>
+
+        <div class="line">
+          <div class="speaker">Waiter</div>
+          <div class="audio-btn" onclick="speak('How do you like your sandwich?')">▶</div>
+          <div class="speech"><b>How do you like</b> your sandwich?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">George</div>
+          <div class="audio-btn" onclick="speak('It is a little bland.')">▶</div>
+          <div class="speech">It's a little bland.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Waiter</div>
+          <div class="audio-btn" onclick="speak('Would you like some ketchup or mustard? We also have barbecue sauce.')">▶</div>
+          <div class="speech"><b>Would you like</b> some ketchup or mustard? We also have barbecue sauce.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">George</div>
+          <div class="audio-btn" onclick="speak('Ketchup would be great, please.')">▶</div>
+          <div class="speech">Ketchup would be great, please.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      const uttr = new SpeechSynthesisUtterance(text);
+      uttr.lang = 'en-US';
+      uttr.rate = 0.85; 
+      window.speechSynthesis.speak(uttr);
+    }
+  </script>
+</body>
+</html>
