@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>3級 Day 45 Common Expressions</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* =========================================
+       【ブラウザ版】デザイン
+       ========================================= */
+    :root { 
+      --primary: #2c3e50; 
+      --accent: #1a5276; 
+      --bg: #f4f7f6; 
+      --char-bg: #ffffff; 
+    }
+    html, body { margin: 0; padding: 0; background: var(--bg); font-family: 'Nunito', 'Kosugi Maru', sans-serif; }
+    
+    .container { width: 210mm; margin: 20px auto; background: white; padding: 10mm 15mm; box-shadow: 0 4px 15px rgba(0,0,0,0.05); box-sizing: border-box; border-radius: 8px; }
+    .header { 
+      border-bottom: 2px solid var(--primary); 
+      margin-bottom: 20px; 
+      padding-bottom: 10px; 
+      display: flex;
+      justify-content: flex-end;
+    }
+    .header h1 { font-size: 20px; color: var(--primary); margin: 0; }
+    
+    .instruction { font-size: 13px; font-weight: bold; color: #555; margin-bottom: 25px; padding: 10px; background: #fdfdfd; border-left: 4px solid var(--accent); }
+    
+    .script-scene { margin-bottom: 40px; padding: 15px; border: 1px solid #eee; border-radius: 8px; }
+    .scene-title { font-size: 16px; font-weight: bold; color: #7f8c8d; margin-bottom: 15px; font-style: italic; }
+    
+    .line { display: flex; gap: 15px; margin-bottom: 12px; align-items: flex-start; }
+    .speaker { width: 85px; font-weight: 800; color: var(--accent); text-align: right; flex-shrink: 0; padding-top: 5px; }
+    .speech { background: var(--char-bg); padding: 10px 18px; border: 1px solid #e0e0e0; border-radius: 0 15px 15px 15px; flex-grow: 1; font-size: 15.5px; line-height: 1.5; color: #2c3e50; }
+    
+    .speech b { color: var(--accent); font-weight: 800; text-decoration: underline; }
+    
+    .audio-btn { 
+      cursor: pointer; background: #f8f9fa; border: 1px solid #ddd; border-radius: 50%; width: 28px; height: 28px; 
+      display: flex; align-items: center; justify-content: center; font-size: 14px; transition: 0.3s; flex-shrink: 0;
+    }
+    .audio-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+
+    .footnote { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+    .footnote b { color: #333; }
+
+    /* =========================================
+       【PDF印刷用】完全黒字スタイル
+       ========================================= */
+    @media print {
+      @page { size: A4; margin: 15mm; }
+      body { background: white; }
+      .container { width: 100% !important; margin: 0 !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
+      .controls, .audio-btn { display: none !important; }
+      .header { border-bottom: 1.5px solid #000; margin-bottom: 6mm; display: flex; justify-content: flex-end; }
+      .header h1 { color: #000 !important; font-size: 18px !important; }
+      .instruction { border: 1px solid #000 !important; border-left: 4px solid #000 !important; color: #000 !important; }
+      .script-scene { page-break-inside: avoid; border: none; padding: 0; margin-bottom: 30px; }
+      .scene-title { color: #000; border-bottom: 1px solid #000; font-size: 14px !important; margin-bottom: 10px; }
+      .speaker { color: #000 !important; width: 75px; }
+      .speech { background: none !important; border: none !important; border-left: 2.5px solid #000 !important; border-radius: 0; padding: 0 15px; font-size: 17px !important; color: #000 !important; }
+      .speech b { color: #000 !important; text-decoration: none; border-bottom: 1.5px solid #000; }
+      .footnote { border-top: 1px solid #000; color: #000; }
+    }
+    
+    .controls { position: fixed; top: 15px; left: 15px; z-index: 100; }
+    button { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; background: var(--accent); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <button onclick="window.print()">PDF保存 / 印刷</button>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <h1>3級 Day 45 Common Expressions</h1>
+    </div>
+    
+    <div class="instruction">
+      ★ Read the <b>dialogues</b> and check the <b>bold</b> phrases. 
+    </div>
+
+    <div id="script-content">
+      <div class="script-scene">
+        <div class="scene-title">Scene 1: Victory Celebration</div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('Shelly, congratulations! Why don\'t we go to the steakhouse to celebrate your win?')">▶</div>
+          <div class="speech">Shelly, congratulations! <b>Why don't we</b> go to the steakhouse to celebrate your win?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('I\'m not sure. I eat a lot of meat for my muscles every day. I\'m in the mood for pizza tonight.')">▶</div>
+          <div class="speech"><b>I'm not sure</b>. I eat a lot of meat for my muscles every day. I'm in the mood for pizza tonight.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('A new Italian restaurant opened nearby. They have great pizza. Shall we go?')">▶</div>
+          <div class="speech">A new Italian restaurant opened nearby. They have great pizza. Shall we go?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('That\'s a good idea! I\'d love to! Dad, how about you?')">▶</div>
+          <div class="speech"><b>That's a good idea</b>! <b>I'd love to</b>! Dad, <b>how about you?</b></div>
+        </div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('Of course! Let\'s go.')">▶</div>
+          <div class="speech"><b>Of course!</b> Let's go.</div>
+        </div>
+      </div>
+
+      <div class="script-scene">
+        <div class="scene-title">Scene 2: Ordering Drinks</div>
+        <div class="line">
+          <div class="speaker">Waitress</div>
+          <div class="audio-btn" onclick="speak('May I help you?')">▶</div>
+          <div class="speech"><b>May I help you?</b></div>
+        </div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('We\'d like to start off with some drinks.')">▶</div>
+          <div class="speech">We'd like to start off with some drinks.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Waitress</div>
+          <div class="audio-btn" onclick="speak('Certainly!')">▶</div>
+          <div class="speech"><b>Certainly!</b></div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('Can we have the drink menu?')">▶</div>
+          <div class="speech">Can we have the drink menu?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Waitress</div>
+          <div class="audio-btn" onclick="speak('Sure. Here you are.')">▶</div>
+          <div class="speech"><b>Sure.</b> <b>Here you are.</b></div>
+        </div>
+      </div>
+
+      <div class="script-scene">
+        <div class="scene-title">Scene 3: Choosing the Main Dish</div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('Let\'s order two extra large pizzas so that we can share!')">▶</div>
+          <div class="speech">Let's order two extra large pizzas so that we can share!</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('No, thanks.')">▶</div>
+          <div class="speech"><b>No, thanks.</b></div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('Why not?')">▶</div>
+          <div class="speech"><b>Why not?</b></div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('I\'m just not in the mood for cheese today.')">▶</div>
+          <div class="speech">I'm just not in the mood for cheese today.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('How about the Marinara? It has no cheese.')">▶</div>
+          <div class="speech"><b>How about</b> the Marinara? It has no cheese.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('Well... but I really want to eat seafood today.')">▶</div>
+          <div class="speech">Well... but I really want to eat seafood today.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Waitress</div>
+          <div class="audio-btn" onclick="speak('Are you ready to order?')">▶</div>
+          <div class="speech">Are you ready to order?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('Shelly, go ahead and order your pizza.')">▶</div>
+          <div class="speech">Shelly, <b>go ahead</b> and order your pizza.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('Okay! I\'ll have the Margherita.')">▶</div>
+          <div class="speech">Okay! I'll have the Margherita.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('And I\'ll have the Pepperoni.')">▶</div>
+          <div class="speech">And I'll have the Pepperoni.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('Waitress, what do you recommend for seafood?')">▶</div>
+          <div class="speech">Waitress, what do you recommend for seafood?</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Waitress</div>
+          <div class="audio-btn" onclick="speak('The seafood pasta with fresh clams is excellent.')">▶</div>
+          <div class="speech">The seafood pasta with fresh clams is excellent.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Mom</div>
+          <div class="audio-btn" onclick="speak('That sounds good! I\'ll have that.')">▶</div>
+          <div class="speech"><b>That sounds good!</b> I'll have that.</div>
+        </div>
+      </div>
+
+      <div class="script-scene">
+        <div class="scene-title">Scene 4: A Fork Accident</div>
+        <div class="line">
+          <div class="speaker">Shelly</div>
+          <div class="audio-btn" onclick="speak('This pizza is amazing! I love it!')">▶</div>
+          <div class="speech">This pizza is amazing! I love it!</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('Me, too. Oh! I dropped my fork.')">▶</div>
+          <div class="speech"><b>Me, too.</b> Oh! I dropped my fork.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Waitress</div>
+          <div class="audio-btn" onclick="speak('Don\'t worry. I\'ll bring you another one right away.')">▶</div>
+          <div class="speech"><b>Don't worry</b>. I'll bring you another one right away.</div>
+        </div>
+        <div class="line">
+          <div class="speaker">Dad</div>
+          <div class="audio-btn" onclick="speak('Oh, thank you.')">▶</div>
+          <div class="speech">Oh, thank you.</div>
+        </div>
+      </div>
+
+      <div class="footnote">
+        <b>Word Bank:</b><br>
+        * <b>clams</b>: あさり、ハマグリなどの二枚貝 <br>
+        * <b>Margherita / Marinara / Pepperoni</b>: ピザの種類（マルゲリータ、マリナーラ、ペペロニ）<br>
+        * <b>in the mood for ~</b>: ～をしたい気分だ 
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function speak(text) {
+      window.speechSynthesis.cancel();
+      const uttr = new SpeechSynthesisUtterance(text);
+      uttr.lang = 'en-US';
+      uttr.rate = 0.85; 
+      window.speechSynthesis.speak(uttr);
+    }
+  </script>
+</body>
+</html>
